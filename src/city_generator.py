@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import random
 
 class City:
-    def __init__(self, rows, cols, seed=None):
+    def __init__(self, rows: int, cols: int, seed=None):
         """
         Inicjalizacja miasta: tworzenie grafu 2D o zadanej liczbie wierszy i kolumn
         oraz generowanie pozycji dla węzłów.
@@ -13,9 +13,21 @@ class City:
         self.seed = seed  # Seed do kontrolowania losowości
         random.seed(self.seed)  # Ustawienie seeda
 
-        self.G = nx.grid_2d_graph(rows, cols)  # Graf nie-skierowany
+        self.G = nx.grid_2d_graph(rows, cols)  # Graf nieskierowany
         self.pos = self.generate_node_positions()  # Pozycje węzłów
+        self.edges = self.generate_edges_positions()
         self.add_edge_weights()  # Dodawanie wag na podstawie odległości euklidesowej
+
+    def __iter__(self):
+        for node, nodePos in self.pos.items():
+            yield (nodePos)
+
+    def generate_edges_positions(self):
+        edges = []
+        for edge in self.G.edges():
+            node1, node2 = edge[0], edge[1]
+            edges.append((self.pos[node1], self.pos[node2]))
+        return edges
 
     def generate_node_positions(self):
         """
@@ -67,17 +79,3 @@ class City:
             nx.draw_networkx_edges(self.G, self.pos, edgelist=path_edges, edge_color="red", width=2)
 
         plt.show()
-
-# # Tworzenie instancji miasta z seed
-# seed_value = 42
-# city = City(rows=5, cols=5, seed=seed_value)
-
-# # Znajdowanie najkrótszej ścieżki między (0, 0) a (4, 4)
-# shortest_path, path_length = city.find_shortest_path(source=(0, 0), target=(4, 4))
-
-# # Wyświetlenie wyników
-# print("Najkrótsza ścieżka (z uwzględnieniem wag):", shortest_path)
-# print("Długość najkrótszej ścieżki:", path_length)
-
-# # Rysowanie grafu z wyróżnieniem najkrótszej ścieżki
-# city.draw(shortest_path=shortest_path)
