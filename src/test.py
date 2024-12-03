@@ -1,12 +1,9 @@
-import city_generator
-import city_generator.city_generator
-from city_generator.city_generator import City
+from city_generator import City
+import config as con
 
-c = City(4, 4, 5134)
-print(c.pos)
-print(c.G.edges())
+c= City(con.netRows, con.netCols, con.seed)
 
-c.draw()
+pos = c.generate_scale_position()
 
-for e in c.edges:
-    print(e)
+for key, val in pos.items():
+    print(key, val)

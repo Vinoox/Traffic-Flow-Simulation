@@ -1,4 +1,5 @@
 import networkx as nx
+import config as con
 import matplotlib.pyplot as plt
 import random
 
@@ -13,29 +14,71 @@ class City:
         self.seed = seed  # Seed do kontrolowania losowości
         random.seed(self.seed)  # Ustawienie seeda
 
-        self.G = nx.grid_2d_graph(rows, cols)  # Graf nieskierowany
-        self.pos = self.generate_node_positions()  # Pozycje węzłów
-        self.edges = self.generate_edges_positions()
+        #generowanie modelu miasta
+        self.G = nx.grid_2d_graph(rows, cols) 
+        self.pos = self.randomize_node_positions()  # Pozycje węzłów
+        
+        self.scalePos = self.generate_scale_position()
+        self.scalEdges = self.generate_edges_positions()
+
+        for id, val in self.scalEdges.items():
+            print(id, val)
+
         self.add_edge_weights()  # Dodawanie wag na podstawie odległości euklidesowej
 
     def __iter__(self):
-        for node, nodePos in self.pos.items():
-            yield (nodePos)
+        for id, Pos in self.scalePos.items():
+            yield (id, Pos)
 
     def generate_edges_positions(self):
-        edges = []
+        edges = {}
         for edge in self.G.edges():
-            node1, node2 = edge[0], edge[1]
-            edges.append((self.pos[node1], self.pos[node2]))
+            startId, endId = edge[0], edge[1]
+            start, end = self.scalePos[edge[0]], self.scalePos[edge[1]]
+            
+            # Obliczanie wektora drogi
+            dx, dy = end[0] - start[0], end[1] - start[1]
+            
+            # Obliczanie wektora prostopadłego i normalizacja
+            length = (dx**2 + dy**2) ** 0.5
+
+            offset = 3  # Przesunięcie linii w pikselach
+
+            perp_dx, perp_dy = -dy / length * offset, dx / length * offset
+            
+            # Przesunięte punkty
+            start1 = (int(start[0] + perp_dx), int(start[1] + perp_dy))
+            end1 = (int(end[0] + perp_dx), int(end[1] + perp_dy))
+            start2 = (int(start[0] - perp_dx), int(start[1] - perp_dy))
+            end2 = (int(end[0] - perp_dx), int(end[1] - perp_dy))
+
+            edges[(startId, endId)] = ((start1, end1))
+            edges[(endId, startId)] = ((start2, end2))
         return edges
 
-    def generate_node_positions(self):
+    def randomize_node_positions(self):
         """
         Generowanie losowych pozycji dla każdego węzła w grafie.
         Pozycje są losowane wokół siatki.
         """
-        return {(x, y): (y + random.uniform(-0.5, 0.5), -x + random.uniform(-0.5, 0.5)) 
+        return {(x, y): (y + random.uniform(-0.4, 0.4), -x + random.uniform(-0.4, 0.4)) 
                 for x, y in self.G.nodes()}
+
+    def scale(self, pos: tuple):
+        self.X = [val[0] for val in self.pos.values()]
+        self.Y = [val[1] for val in self.pos.values()]
+        self.minX, self.maxX = min(self.X), max(self.X)
+        self.minY, self.maxY = min(self.Y), max(self.Y)
+
+        x = int((pos[0] - self.minX) / (self.maxX - self.minX) * (con.winWidth - 2 * con.margin) + con.margin)
+        y = int((pos[1] - self.minY) / (self.maxY - self.minY) * (con.winHeight - 2 * con.margin) + con.margin)
+        return (x, y)
+    
+    def generate_scale_position(self):
+        scalePos ={}
+        for key, val in self.pos.items():
+            scalePos[key] = self.scale(val)
+        return scalePos
 
     def add_edge_weights(self):
         """
@@ -52,8 +95,8 @@ class City:
         Znajdowanie najkrótszej ścieżki w grafie z uwzględnieniem wag (algorytm Dijkstry).
         """
         shortest_path = nx.shortest_path(self.G, source=source, target=target, weight='weight')
-        path_length = nx.shortest_path_length(self.G, source=source, target=target, weight='weight')
-        return shortest_path, path_length
+        #path_length = nx.shortest_path_length(self.G, source=source, target=target, weight='weight')
+        return shortest_path
 
     def draw(self, shortest_path=None):
         """
