@@ -1,11 +1,11 @@
-seed = 5321
+seed = 53211
 
 #window parameter
-winWidth = 1800
+winWidth = 2000
 winHeight = 1000
 margin = 100
 fps = 144
 
 #graph parameter
-netRows = 4
-netCols = 5
+netRows = 6
+netCols = 6

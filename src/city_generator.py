@@ -1,6 +1,8 @@
 import networkx as nx
 import config as con
 import matplotlib.pyplot as plt
+from junction import Junction
+from road import Road
 import random
 
 class City:
@@ -11,24 +13,50 @@ class City:
         """
         self.rows = rows
         self.cols = cols
-        self.seed = seed  # Seed do kontrolowania losowości
+        self.seed = seed 
         random.seed(self.seed)  # Ustawienie seeda
 
         #generowanie modelu miasta
         self.G = nx.grid_2d_graph(rows, cols) 
-        self.pos = self.randomize_node_positions()  # Pozycje węzłów
-        
-        self.scalePos = self.generate_scale_position()
-        self.scalEdges = self.generate_edges_positions()
-
-        for id, val in self.scalEdges.items():
-            print(id, val)
-
+        self.pos = self.randomize_node_positions()
         self.add_edge_weights()  # Dodawanie wag na podstawie odległości euklidesowej
 
-    def __iter__(self):
-        for id, Pos in self.scalePos.items():
-            yield (id, Pos)
+        #generowanie przeskalowanych pozycji do wyświetlania
+        self.scalePos = self.generate_scale_position()
+        self.scaleEdges = self.generate_edges_positions()
+
+        #generowanie skrzyżowań i dróg
+        self.junctions = [Junction(id, pos) for id, pos in self.scalePos.items()]
+        self.roads = [Road(key, val) for key, val in self.scaleEdges.items()]
+
+        for id, val in self.scaleEdges.items():
+            print(id, val)
+
+    def getRoad(self, id: tuple):
+        for road in self.roads:
+            if id == road.id:
+                return road
+
+    def scale(self, pos: tuple):
+        self.X = [val[0] for val in self.pos.values()]
+        self.Y = [val[1] for val in self.pos.values()]
+        self.minX, self.maxX = min(self.X), max(self.X)
+        self.minY, self.maxY = min(self.Y), max(self.Y)
+
+        x = (pos[0] - self.minX) / (self.maxX - self.minX)
+        y = (pos[1] - self.minY) / (self.maxY - self.minY)
+
+        # Przekształcenie na piksele (odwrócenie osi, jeśli trzeba):
+        x_pixel = int(x * (con.winWidth - 2 * con.margin) + con.margin)
+        y_pixel = int((1 - y) * (con.winHeight - 2 * con.margin) + con.margin)  # Odwrócenie Y
+
+        return x_pixel, y_pixel
+
+    def generate_scale_position(self):
+        scalePos ={}
+        for key, val in self.pos.items():
+            scalePos[key] = self.scale(val)
+        return scalePos
 
     def generate_edges_positions(self):
         edges = {}
@@ -53,7 +81,7 @@ class City:
             end2 = (int(end[0] - perp_dx), int(end[1] - perp_dy))
 
             edges[(startId, endId)] = ((start1, end1))
-            edges[(endId, startId)] = ((start2, end2))
+            edges[(endId, startId)] = ((end2, start2))
         return edges
 
     def randomize_node_positions(self):
@@ -63,22 +91,6 @@ class City:
         """
         return {(x, y): (y + random.uniform(-0.4, 0.4), -x + random.uniform(-0.4, 0.4)) 
                 for x, y in self.G.nodes()}
-
-    def scale(self, pos: tuple):
-        self.X = [val[0] for val in self.pos.values()]
-        self.Y = [val[1] for val in self.pos.values()]
-        self.minX, self.maxX = min(self.X), max(self.X)
-        self.minY, self.maxY = min(self.Y), max(self.Y)
-
-        x = int((pos[0] - self.minX) / (self.maxX - self.minX) * (con.winWidth - 2 * con.margin) + con.margin)
-        y = int((pos[1] - self.minY) / (self.maxY - self.minY) * (con.winHeight - 2 * con.margin) + con.margin)
-        return (x, y)
-    
-    def generate_scale_position(self):
-        scalePos ={}
-        for key, val in self.pos.items():
-            scalePos[key] = self.scale(val)
-        return scalePos
 
     def add_edge_weights(self):
         """
