@@ -13,19 +13,19 @@ class City:
         """
         self.rows = rows
         self.cols = cols
-        self.seed = seed 
+        self.seed = seed
         random.seed(self.seed)  # Ustawienie seeda
 
-        #generowanie modelu miasta
-        self.G = nx.grid_2d_graph(rows, cols) 
+        # generowanie modelu miasta
+        self.G = nx.grid_2d_graph(rows, cols)
         self.pos = self.randomize_node_positions()
         self.add_edge_weights()  # Dodawanie wag na podstawie odległości euklidesowej
 
-        #generowanie przeskalowanych pozycji do wyświetlania
+        # generowanie przeskalowanych pozycji do wyświetlania
         self.scalePos = self.generate_scale_position()
         self.scaleEdges = self.generate_edges_positions()
 
-        #generowanie skrzyżowań i dróg
+        # generowanie skrzyżowań i dróg
         self.junctions = [Junction(id, pos) for id, pos in self.scalePos.items()]
         self.roads = [Road(key, val) for key, val in self.scaleEdges.items()]
 
@@ -53,7 +53,7 @@ class City:
         return x_pixel, y_pixel
 
     def generate_scale_position(self):
-        scalePos ={}
+        scalePos = {}
         for key, val in self.pos.items():
             scalePos[key] = self.scale(val)
         return scalePos
@@ -63,17 +63,17 @@ class City:
         for edge in self.G.edges():
             startId, endId = edge[0], edge[1]
             start, end = self.scalePos[edge[0]], self.scalePos[edge[1]]
-            
+
             # Obliczanie wektora drogi
             dx, dy = end[0] - start[0], end[1] - start[1]
-            
+
             # Obliczanie wektora prostopadłego i normalizacja
-            length = (dx**2 + dy**2) ** 0.5
+            length = (dx ** 2 + dy ** 2) ** 0.5
 
             offset = 3  # Przesunięcie linii w pikselach
 
             perp_dx, perp_dy = -dy / length * offset, dx / length * offset
-            
+
             # Przesunięte punkty
             start1 = (int(start[0] + perp_dx), int(start[1] + perp_dy))
             end1 = (int(end[0] + perp_dx), int(end[1] + perp_dy))
@@ -89,7 +89,7 @@ class City:
         Generowanie losowych pozycji dla każdego węzła w grafie.
         Pozycje są losowane wokół siatki.
         """
-        return {(x, y): (y + random.uniform(-0.4, 0.4), -x + random.uniform(-0.4, 0.4)) 
+        return {(x, y): (y + random.uniform(-0.4, 0.4), -x + random.uniform(-0.4, 0.4))
                 for x, y in self.G.nodes()}
 
     def add_edge_weights(self):
@@ -107,7 +107,7 @@ class City:
         Znajdowanie najkrótszej ścieżki w grafie z uwzględnieniem wag (algorytm Dijkstry).
         """
         shortest_path = nx.shortest_path(self.G, source=source, target=target, weight='weight')
-        #path_length = nx.shortest_path_length(self.G, source=source, target=target, weight='weight')
+        # path_length = nx.shortest_path_length(self.G, source=source, target=target, weight='weight')
         return shortest_path
 
     def draw(self, shortest_path=None):
@@ -115,7 +115,7 @@ class City:
         Rysowanie grafu z możliwością wyróżnienia najkrótszej ścieżki.
         """
         plt.figure(figsize=(8, 8))
-        
+
         # Rysowanie grafu
         nx.draw(
             self.G,
