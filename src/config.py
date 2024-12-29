@@ -7,5 +7,5 @@ margin = 100
 fps = 144
 
 #graph parameter
-netRows = 6
-netCols = 6
+netRows = 10
+netCols = 10

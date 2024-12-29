@@ -1,19 +1,20 @@
-from traffic_lights import TrafficLight
-
 color = {'red': (255, 0, 0),
          'green': (0, 255, 0),
          'orange': (221, 244, 7)}
 
-
+from traffic_lights import TrafficLight
 class Road:
     def __init__(self, id: tuple, pos: tuple):
         self.id = id
         self.start = pos[0]  # (x, y)
         self.end = pos[1]    # (x, y)
         self.traffic = 0
+        self.vector = self.getVector()
+
+        self.cars_on_road = []
 
         # Tworzenie światła na podstawie pozycji drogi
-        self.traffic_light = TrafficLight(self.start, self.end, cycle_duration=300)
+        self.traffic_light = TrafficLight(self.end, self.vector, cycle_duration=300)
 
     def setColor(self):
         """

@@ -6,21 +6,25 @@ from car import Car
 
 def drawCity(city: City, window):
     window.fill((0, 0, 0))
+
     for road in city.roads:
-        pg.draw.aaline(window, road.setColor(), road.start, road.end, 4)
+        pg.draw.aaline(window, road.setColor(), road.start, road.end, 0)
 
     for junction in city.junctions:
         pg.draw.circle(window, (255, 255, 255), (junction.x, junction.y), 10)
 
+    for road in city.roads:
+        pg.draw.circle(window, road.traffic_light.get_color(), road.traffic_light.position, 5)
 
 def createCar(city: City):
     car = Car(city)
     print(car.currentNode, car.endNode)
     return car
 
-
 def drawCar(car: Car, window):
-    pg.draw.circle(window, (0, 0, 255), (car.x, car.y), 4)
+    pg.draw.circle(window, (51, 204, 255), (car.x, car.y), 4)
+
+
 
 
 def isMouseNearRoad(mouse_pos, road, tolerance=3):
@@ -61,19 +65,35 @@ def drawText(window, text, position, color=(255, 255, 255)):
     label = font.render(text, True, color)
     window.blit(label, position)
 
-def simulation():
-    c = City(con.netRows, con.netCols, con.seed)
-    lstOfCars = []
+
+def simulation(prev_state=None):
+    """
+    Funkcja symulacji, która zachowuje poprzednie wartości stanu symulacji.
+
+    Args:
+        prev_state (dict): Słownik zawierający poprzednie wartości symulacji,
+                           takie jak miasto, lista samochodów itp.
+    """
+    # Jeśli istnieje poprzedni stan, go wykorzystujemy
+    if prev_state:
+        c = prev_state['city']
+        lstOfCars = prev_state['cars']
+    else:
+        # Inicjalizacja nowego stanu, jeśli brak poprzedniego
+        c = City(con.netRows, con.netCols, con.seed)
+        lstOfCars = []
 
     pg.init()
     window = pg.display.set_mode((con.winWidth, con.winHeight), pg.RESIZABLE)
     pg.display.set_caption("Graf miasta")
     clock = pg.time.Clock()
     running = True
-    simulation_running = False
+    simulation_running = prev_state['running'] if prev_state else False
 
     while running:
+        clock.tick(con.fps)
         drawCity(c, window)
+        mouse_pos = pg.mouse.get_pos()
 
         # Aktualizacja świateł na drogach
         for road in c.roads:
@@ -89,23 +109,24 @@ def simulation():
                 if event.key == pg.K_ESCAPE:
                     simulation_running = not simulation_running
 
+                if event.key == pg.K_c:
+                    lstOfCars.clear()
+
         if simulation_running:
             lstOfCars.append(createCar(c))
 
         for car in lstOfCars:
             # Zatrzymywanie samochodu na czerwonym świetle
-            car.move()
+            car.move(lstOfCars)
             if car.end:
                 lstOfCars.remove(car)
             drawCar(car, window)
 
-        # Rysowanie świateł drogowych
-        for road in c.roads:
-            light_x, light_y = road.traffic_light.position
-            light_color = road.traffic_light.get_color()
-            pg.draw.circle(window, light_color, (light_x, light_y), 5)
+        drawText(window, f'fps: {clock.get_fps():.1f}', (1700, 40), (255, 255, 255))
 
         pg.display.flip()
         clock.tick(con.fps)
 
     pg.quit()
+
+

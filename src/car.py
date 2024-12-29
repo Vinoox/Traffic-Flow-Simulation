@@ -30,7 +30,13 @@ class Car:
         self.speed = 0.5
         self.end = 0
 
-    def move(self):
+
+
+    def move(self, cars):
+        """
+        Ruch samochodu z uwzględnieniem innych samochodów na tej samej drodze
+        oraz sygnalizacji świetlnej.
+        """
         # Pobranie wektora kierunku ruchu
         self.vector = self.road.getVector()
         dx, dy = self.vector
@@ -43,12 +49,29 @@ class Car:
         direction_to_light = (light_pos[0] - self.x, light_pos[1] - self.y)
         dot_product = dx * direction_to_light[0] + dy * direction_to_light[1]
 
-        # Jeśli dot_product jest dodatni, oznacza to, że samochód zmierza w stronę świateł
-        if dot_product > 0 and distance_to_light < 15:  # Zatrzymaj się, jeśli jest blisko świateł
+        # Jeśli jesteśmy blisko świateł i są czerwone, zatrzymujemy się
+        if dot_product > 0 and distance_to_light < 15:
             if self.road.traffic_light.state == 'red':
-                return  # Zatrzymujemy pojazd
+                return  # Czekamy na zielone światło
+            elif self.road.traffic_light.state == 'green':
+                # Możemy ruszyć, jeśli światło jest zielone i jesteśmy blisko
+                pass
 
-        # Przemieszczanie samochodu, jeśli światło jest zielone
+        # Sprawdzanie odległości od innych samochodów
+        for other_car in cars:
+            if other_car == self:
+                continue  # Pomijamy sam siebie
+
+            if other_car.road == self.road:
+                distance_to_car = ((self.x - other_car.x) ** 2 + (self.y - other_car.y) ** 2) ** 0.5
+
+                # Zatrzymujemy się tylko wtedy, gdy odległość jest bardzo mała
+                # i inne auto blokuje drogę
+                if distance_to_car < 10:
+                    if other_car.x > self.x:  # Inne auto jest przed nami
+                        return  # Zatrzymujemy się, czekamy, aż będzie miejsce
+
+        # Jeśli światło jest zielone i nie ma innych przeszkód, poruszamy się
         self.x += dx * self.speed
         self.y += dy * self.speed
 
