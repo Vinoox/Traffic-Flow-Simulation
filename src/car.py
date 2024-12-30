@@ -6,24 +6,25 @@ from city_generator import City
 class Car:
     def __init__(self, city: City):
         self.city = city
+
+        #choose start and end node
         self.nodes = list(city.G.nodes())
         self.startNode = random.choice(self.nodes)
+        self.nodes.remove(self.startNode)
         self.endNode = random.choice(self.nodes)
 
-        while self.endNode == self.startNode:
-            self.endNode = random.choice(self.nodes)
 
         self.currentNode = self.startNode
         self.startTime = time()
         self.endTime = 0
         self.path = city.find_shortest_path(self.startNode, self.endNode)
-        print(self.path)
 
         self.pathIndex = 0
         self.nextNode = self.path[1]
 
         self.road = city.getRoad((self.currentNode, self.nextNode))
         self.road.traffic += 1
+        self.road.cars_on_road.append(self)
         self.x = self.road.start[0]
         self.y = self.road.start[1]
 
@@ -32,7 +33,7 @@ class Car:
 
 
 
-    def move(self, cars):
+    def move(self):
         """
         Ruch samochodu z uwzględnieniem innych samochodów na tej samej drodze
         oraz sygnalizacji świetlnej.
@@ -58,18 +59,16 @@ class Car:
                 pass
 
         # Sprawdzanie odległości od innych samochodów
-        for other_car in cars:
+        for other_car in self.road.cars_on_road:
             if other_car == self:
                 continue  # Pomijamy sam siebie
 
-            if other_car.road == self.road:
-                distance_to_car = ((self.x - other_car.x) ** 2 + (self.y - other_car.y) ** 2) ** 0.5
-
-                # Zatrzymujemy się tylko wtedy, gdy odległość jest bardzo mała
-                # i inne auto blokuje drogę
-                if distance_to_car < 10:
-                    if other_car.x > self.x:  # Inne auto jest przed nami
-                        return  # Zatrzymujemy się, czekamy, aż będzie miejsce
+            distance_to_car = ((self.x - other_car.x) ** 2 + (self.y - other_car.y) ** 2) ** 0.5
+            # Zatrzymujemy się tylko wtedy, gdy odległość jest bardzo mała
+            # i inne auto blokuje drogę
+            if distance_to_car < 10:
+                if other_car.x > self.x:  # Inne auto jest przed nami
+                    return  # Zatrzymujemy się, czekamy, aż będzie miejsce
 
         # Jeśli światło jest zielone i nie ma innych przeszkód, poruszamy się
         self.x += dx * self.speed
@@ -78,12 +77,14 @@ class Car:
         # Sprawdzenie, czy dotarliśmy do kolejnego węzła
         if abs(self.x - self.road.end[0]) < self.speed and abs(self.y - self.road.end[1]) < 10:
             self.road.traffic -= 1  # Zmniejszamy ruch na drodze
+            self.road.cars_on_road.remove(self)
             self.pathIndex += 1
             if self.pathIndex + 1 < len(self.path):  # Zapewniamy, że jest następny węzeł
                 self.currentNode = self.path[self.pathIndex]
                 self.nextNode = self.path[self.pathIndex + 1]
                 self.road = self.city.getRoad((self.currentNode, self.nextNode))
                 self.road.traffic += 1
+                self.road.cars_on_road.append(self)
                 self.x, self.y = self.road.start[0], self.road.start[1]
             else:
                 # Dotarliśmy do końca trasy

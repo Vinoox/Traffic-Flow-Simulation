@@ -3,7 +3,6 @@ import pygame as pg
 import config as con
 from car import Car
 
-
 def drawCity(city: City, window):
     window.fill((0, 0, 0))
 
@@ -14,7 +13,7 @@ def drawCity(city: City, window):
         pg.draw.circle(window, (255, 255, 255), (junction.x, junction.y), 10)
 
     for road in city.roads:
-        pg.draw.circle(window, road.traffic_light.get_color(), road.traffic_light.position, 5)
+        pg.draw.circle(window, road.traffic_light.state, road.traffic_light.position, 5)
 
 def createCar(city: City):
     car = Car(city)
@@ -22,10 +21,7 @@ def createCar(city: City):
     return car
 
 def drawCar(car: Car, window):
-    pg.draw.circle(window, (51, 204, 255), (car.x, car.y), 4)
-
-
-
+    pg.draw.circle(window, (51, 204, 255), (car.x, car.y), 3)
 
 def isMouseNearRoad(mouse_pos, road, tolerance=3):
     x1, y1 = road.start
@@ -99,25 +95,40 @@ def simulation(prev_state=None):
         for road in c.roads:
             road.update_light()
 
+
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
 
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
-                    lstOfCars.append(createCar(c))  # Generowanie auta
+                    lstOfCars.append(createCar(c))
+
+                #spawnig cars
                 if event.key == pg.K_ESCAPE:
                     simulation_running = not simulation_running
 
+                #clear maps
                 if event.key == pg.K_c:
                     lstOfCars.clear()
+                    for road in c.roads:
+                        road.traffic = 0
+                        road.cars_on_road.clear()
+
+                if event.key == pg.K_r:
+                    for road in c.roads:
+                        road.traffic_light.state = 'red'
+
+                if event.key == pg.K_g:
+                    for road in c.roads:
+                        road.traffic_light.state = 'green'
 
         if simulation_running:
             lstOfCars.append(createCar(c))
 
         for car in lstOfCars:
             # Zatrzymywanie samochodu na czerwonym świetle
-            car.move(lstOfCars)
+            car.move()
             if car.end:
                 lstOfCars.remove(car)
             drawCar(car, window)
