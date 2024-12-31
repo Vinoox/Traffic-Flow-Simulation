@@ -25,8 +25,9 @@ class Car:
         self.road = city.getRoad((self.currentNode, self.nextNode))
         self.road.traffic += 1
         self.road.cars_on_road.append(self)
-        self.x = self.road.start[0]
-        self.y = self.road.start[1]
+        self.vector = self.road.getVector()
+        self.x = self.road.start[0] + self.vector[0] * 10
+        self.y = self.road.start[1] + self.vector[1] * 10
 
         self.speed = 0.5
         self.end = 0

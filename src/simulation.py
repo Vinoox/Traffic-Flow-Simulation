@@ -91,10 +91,9 @@ def simulation(prev_state=None):
         drawCity(c, window)
         mouse_pos = pg.mouse.get_pos()
 
-        # Aktualizacja świateł na drogach
-        for road in c.roads:
-            road.update_light()
-
+        #light update
+        for junction in c.junctions:
+            junction.update_light()
 
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -108,7 +107,7 @@ def simulation(prev_state=None):
                 if event.key == pg.K_ESCAPE:
                     simulation_running = not simulation_running
 
-                #clear maps
+                #clear map
                 if event.key == pg.K_c:
                     lstOfCars.clear()
                     for road in c.roads:
@@ -134,6 +133,7 @@ def simulation(prev_state=None):
             drawCar(car, window)
 
         drawText(window, f'fps: {clock.get_fps():.1f}', (1700, 40), (255, 255, 255))
+        drawText(window, f'cars: {len(lstOfCars)}', (1700, 60), (255, 255, 255))
 
         pg.display.flip()
         clock.tick(con.fps)

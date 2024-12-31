@@ -28,6 +28,12 @@ class City:
         # generowanie skrzyżowań i dróg
         self.junctions = [Junction(id, pos) for id, pos in self.scalePos.items()]
         self.roads = [Road(key, val) for key, val in self.scaleEdges.items()]
+        for road in self.roads:
+            for junction in self.junctions:
+                if road.id[0] == junction.id:
+                    junction.roadsFrom.append(road)
+                if road.id[1] == junction.id:
+                    junction.roadsTo.append(road)
 
         for id, val in self.scaleEdges.items():
             print(id, val)

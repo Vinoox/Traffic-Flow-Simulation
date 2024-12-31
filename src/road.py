@@ -14,7 +14,7 @@ class Road:
         self.cars_on_road = []
 
         # Tworzenie światła na podstawie pozycji drogi
-        self.traffic_light = TrafficLight(self.end, self.vector, cycle_duration=300)
+        self.traffic_light = TrafficLight(self.end, self.vector)
 
     def setColor(self):
         """
