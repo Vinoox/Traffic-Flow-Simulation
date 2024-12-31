@@ -17,14 +17,17 @@ class Road:
         self.traffic_light = TrafficLight(self.end, self.vector)
 
     def setColor(self):
-        """
-        Ustawia kolor drogi na podstawie gęstości ruchu.
-        """
-        if self.traffic < 3:
-            return 'green'
-        if self.traffic < 5:
-            return 'orange'
-        return 'red'
+        if self.traffic * 4 < self.lenght() * 0.1: return color['green']
+        if self.traffic * 4 < self.lenght() * 0.3: return color['orange']
+        return color['red']
+    
+    def lenght(self):
+        dx = self.end[0] - self.start[0]
+        dy = self.end[1] - self.start[1]
+    
+        length = (dx**2 + dy**2)**0.5
+
+        return length
 
     def update_light(self):
         """
