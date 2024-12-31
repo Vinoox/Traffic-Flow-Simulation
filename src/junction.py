@@ -1,4 +1,5 @@
 from time import time
+import config as con
 
 class Junction():
     def __init__(self, id: tuple, pos: tuple):
@@ -18,7 +19,7 @@ class Junction():
         if self.initial:
             self.roadsTo[self.counter].traffic_light.state = 'green'
             self.initial = False
-        if time() - self.time > self.roadsTo[self.counter].traffic_light.cycle_duration:
+        if time() - self.time > self.roadsTo[self.counter].traffic_light.cycle_duration / con.timeMultiplier:
             self.roadsTo[self.counter].traffic_light.state = 'red'
             self.counter = 0 if self.counter == len(self.roadsTo) - 1 else self.counter + 1
             self.roadsTo[self.counter].traffic_light.state = 'green'

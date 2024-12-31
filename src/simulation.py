@@ -114,6 +114,9 @@ def simulation(prev_state=None):
                         road.traffic = 0
                         road.cars_on_road.clear()
 
+                if event.key == pg.K_t:
+                    con.timeMultiplier = float(input("set time multipler: "))
+
                 if event.key == pg.K_r:
                     for road in c.roads:
                         road.traffic_light.state = 'red'
@@ -139,5 +142,3 @@ def simulation(prev_state=None):
         clock.tick(con.fps)
 
     pg.quit()
-
-

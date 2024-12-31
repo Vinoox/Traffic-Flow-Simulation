@@ -1,6 +1,7 @@
 from time import time
 import random
 from city_generator import City
+import config as con
 
 
 class Car:
@@ -29,7 +30,7 @@ class Car:
         self.x = self.road.start[0] + self.vector[0] * 10
         self.y = self.road.start[1] + self.vector[1] * 10
 
-        self.speed = 0.5
+        self.speed = 0.5 * con.timeMultiplier
         self.end = 0
 
 

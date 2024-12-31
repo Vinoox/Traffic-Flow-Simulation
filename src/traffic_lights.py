@@ -3,6 +3,7 @@ color = {'red': (255, 0, 0),
          'orange': (221, 244, 7)}
 
 import numpy as np
+import config as con
 
 class TrafficLight:
     def __init__(self, pos: tuple, vector: tuple):
@@ -18,5 +19,4 @@ class TrafficLight:
         # Ustalanie pozycji świateł na środku drogi
         self.position = tuple(np.subtract(pos, np.multiply(vector, 12)))
         self.state = 'red'  # 'green' lub 'red'
-        self.cycle_duration = 5
-        self.timer = 0  # Licznik do zmiany świateł
+        self.cycle_duration = 10 / con.timeMultiplier
