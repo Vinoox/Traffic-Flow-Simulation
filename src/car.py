@@ -94,19 +94,17 @@ class Car:
         if abs(self.x - self.road.end[0]) < self.speed and abs(self.y - self.road.end[1]) < 10:
             # if(self.count == 0):
             if self.changed:
-                self.reduceTraffic()
-                # if self.count != 0:
-                #     print("ERROR: count is not 0")
-                self.road.traffic -= 1  # Zmniejszamy ruch na drodze
-                self.road.cars_on_road.pop(0)
                 self.pathIndex += 1; self.changed = False
+
             if self.pathIndex < len(self.path) - 1:  # Zapewniamy, że jest następny węzeł
-                # if self.road.traffic < self.road.maxSize:
                 self.currentNode = self.path[self.pathIndex]
                 self.nextNode = self.path[self.pathIndex + 1]
                 road = self.city.getRoad((self.currentNode, self.nextNode))
                 if len(road.cars_on_road) != 0: distance_to_last_car = ((road.cars_on_road[-1].x - road.start[0]) ** 2 + (road.cars_on_road[-1].y - road.start[1]) ** 2) ** 0.5
                 if len(road.cars_on_road) == 0 or distance_to_last_car > 20:
+                    self.reduceTraffic()
+                    self.road.traffic -= 1  # Zmniejszamy ruch na drodze
+                    self.road.cars_on_road.pop(0)
                     self.road = self.city.getRoad((self.currentNode, self.nextNode))
                     self.changed = True
                     self.speed = 0.5 * con.timeMultiplier
@@ -122,6 +120,9 @@ class Car:
                     self.speed = 0
             else:
                 # Dotarliśmy do końca trasy
+                self.road.traffic -= 1
+                self.reduceTraffic()
+                self.road.cars_on_road.pop(0)
                 self.currentNode = self.endNode
                 self.endTime = time()  # Rejestrujemy czas zakończenia
                 self.end = 1  # Oznaczamy, że dotarliśmy do celu

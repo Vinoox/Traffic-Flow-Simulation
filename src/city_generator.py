@@ -109,6 +109,14 @@ class City:
             distance = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5  # Odległość euklidesowa
             self.G[u][v]['weight'] = distance
 
+    def update(self, id, color):
+        x1, y1 = id[0]
+        x2, y2 = id[1]
+        distance = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5  # Odległość euklidesowa
+        if color == 'green': self.G[id[0]][id[1]]['weight'] = distance
+        elif color == 'orange': self.G[id[0]][id[1]]['weight'] = distance * 1.5
+        else: self.G[id[0]][id[1]]['weight'] = distance * 2
+
     def find_shortest_path(self, source, target):
         """
         Znajdowanie najkrótszej ścieżki w grafie z uwzględnieniem wag (algorytm Dijkstry).

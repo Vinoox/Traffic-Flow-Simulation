@@ -11,7 +11,8 @@ class Road:
         self.end = pos[1]    # (x, y)
         self.traffic = 0
         self.vector = self.getVector()
-        self.maxSize = self.lenght() // 3 - 3
+        self.maxSize = self.lenght() // 3 + 1
+        self.color = 'green'
 
         self.cars_on_road = []
 
@@ -19,15 +20,14 @@ class Road:
         self.traffic_light = TrafficLight(self.end, self.vector)
 
     def setColor(self):
-        if self.traffic * 4 < self.lenght() * 0.1: return color['green']
-        if self.traffic * 4 < self.lenght() * 0.5: return color['orange']
+        if self.traffic < self.maxSize * 0.1: self.color = 'green' ; return color['green']
+        if self.traffic < self.maxSize * 0.2: self.color = 'orange'; return color['orange']
+        self.color = 'red'; return color['red']
 
         #
         # if self.traffic * 3 >= self.lenght() - 6: self.isFull = True; print("Road is full")
         # else: self.isFull = False
         #
-
-        return color['red']
     
     def lenght(self):
         dx = self.end[0] - self.start[0]

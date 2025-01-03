@@ -101,6 +101,10 @@ def simulation(prev_state=None):
         drawCity(c, window)
         mouse_pos = pg.mouse.get_pos()
 
+        #city update
+        for road in c.roads:
+            c.update(road.id, road.color)
+
         #light update
         for junction in c.junctions:
             junction.update_light()
