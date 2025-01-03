@@ -2,11 +2,12 @@ from city_generator import City
 import pygame as pg
 import config as con
 from car import Car
+import time
 
 def drawCity(city: City, window):
     window.fill((0, 0, 0))
 
-    for road in city.roads:
+    for road in city.roads:            
         pg.draw.aaline(window, road.setColor(), road.start, road.end, 0)
 
     for junction in city.junctions:
@@ -16,9 +17,20 @@ def drawCity(city: City, window):
         pg.draw.circle(window, road.traffic_light.state, road.traffic_light.position, 5)
 
 def createCar(city: City):
-    car = Car(city)
-    print(car.currentNode, car.endNode)
-    return car
+    while True:
+        newCar = Car(city)
+        if not newCar.road.traffic > newCar.road.maxSize:
+            if newCar.road.traffic == 0:
+                newCar.road.cars_on_road.append(newCar)
+                newCar.road.traffic += 1
+                return newCar
+            inFront = newCar.road.cars_on_road[-1]
+            distance_to_car = ((newCar.x - inFront.x) ** 2 + (newCar.y - inFront.y) ** 2) ** 0.5
+            if distance_to_car > 20:
+                newCar.road.cars_on_road.append(newCar)
+                newCar.road.traffic += 1
+                return newCar
+# print(car.currentNode, car.endNode)
 
 def drawCar(car: Car, window):
     pg.draw.circle(window, (51, 204, 255), (car.x, car.y), 3)
@@ -73,11 +85,9 @@ def simulation(prev_state=None):
     # Jeśli istnieje poprzedni stan, go wykorzystujemy
     if prev_state:
         c = prev_state['city']
-        lstOfCars = prev_state['cars']
     else:
         # Inicjalizacja nowego stanu, jeśli brak poprzedniego
         c = City(con.netRows, con.netCols, con.seed)
-        lstOfCars = []
 
     pg.init()
     window = pg.display.set_mode((con.winWidth, con.winHeight), pg.RESIZABLE)
@@ -101,7 +111,7 @@ def simulation(prev_state=None):
 
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
-                    lstOfCars.append(createCar(c))
+                    c.lstOfCars.append(createCar(c))
 
                 #spawnig cars
                 if event.key == pg.K_ESCAPE:
@@ -109,7 +119,7 @@ def simulation(prev_state=None):
 
                 #clear map
                 if event.key == pg.K_c:
-                    lstOfCars.clear()
+                    c.lstOfCars.clear()
                     for road in c.roads:
                         road.traffic = 0
                         road.cars_on_road.clear()
@@ -126,17 +136,18 @@ def simulation(prev_state=None):
                         road.traffic_light.state = 'green'
 
         if simulation_running:
-            lstOfCars.append(createCar(c))
+            c.lstOfCars.append(createCar(c))
 
-        for car in lstOfCars:
+        for car in c.lstOfCars:
             # Zatrzymywanie samochodu na czerwonym świetle
+            car.update()
             car.move()
             if car.end:
-                lstOfCars.remove(car)
+                c.lstOfCars.remove(car)
             drawCar(car, window)
 
         drawText(window, f'fps: {clock.get_fps():.1f}', (1700, 40), (255, 255, 255))
-        drawText(window, f'cars: {len(lstOfCars)}', (1700, 60), (255, 255, 255))
+        drawText(window, f'cars: {len(c.lstOfCars)}', (1700, 60), (255, 255, 255))
 
         pg.display.flip()
         clock.tick(con.fps)

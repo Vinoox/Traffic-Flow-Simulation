@@ -2,7 +2,8 @@ color = {'red': (255, 0, 0),
          'green': (0, 255, 0),
          'orange': (221, 244, 7)}
 
-from traffic_lights import TrafficLight
+from traffic_light import TrafficLight
+
 class Road:
     def __init__(self, id: tuple, pos: tuple):
         self.id = id
@@ -10,6 +11,7 @@ class Road:
         self.end = pos[1]    # (x, y)
         self.traffic = 0
         self.vector = self.getVector()
+        self.maxSize = self.lenght() // 3 - 3
 
         self.cars_on_road = []
 
@@ -18,7 +20,13 @@ class Road:
 
     def setColor(self):
         if self.traffic * 4 < self.lenght() * 0.1: return color['green']
-        if self.traffic * 4 < self.lenght() * 0.3: return color['orange']
+        if self.traffic * 4 < self.lenght() * 0.5: return color['orange']
+
+        #
+        # if self.traffic * 3 >= self.lenght() - 6: self.isFull = True; print("Road is full")
+        # else: self.isFull = False
+        #
+
         return color['red']
     
     def lenght(self):

@@ -14,6 +14,7 @@ class City:
         self.rows = rows
         self.cols = cols
         self.seed = seed
+        self.lstOfCars = []
         random.seed(self.seed)  # Ustawienie seeda
 
         # generowanie modelu miasta

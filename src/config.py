@@ -1,14 +1,14 @@
 seed = 53211
 
 #window parameter
-winWidth = 1000
-winHeight = 500
+winWidth = 1800
+winHeight = 1000
 margin = 100
 fps = 144
 
 #graph parameter
-netRows = 10
-netCols = 10
+netRows = 9
+netCols = 9
 
 #time
 timeMultiplier = 1

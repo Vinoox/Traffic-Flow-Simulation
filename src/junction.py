@@ -1,5 +1,6 @@
 from time import time
 import config as con
+import random
 
 class Junction():
     def __init__(self, id: tuple, pos: tuple):
