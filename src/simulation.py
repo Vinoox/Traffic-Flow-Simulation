@@ -2,8 +2,7 @@ from city_generator import City
 import pygame as pg
 import config as con
 from car import Car
-import time
-
+from time import time
 def drawCity(city: City, window):
     window.fill((0, 0, 0))
 
@@ -11,24 +10,30 @@ def drawCity(city: City, window):
         pg.draw.aaline(window, road.setColor(), road.start, road.end, 0)
 
     for junction in city.junctions:
-        pg.draw.circle(window, (255, 255, 255), (junction.x, junction.y), 10)
+        pg.draw.circle(window, (255, 255, 255), (junction.x, junction.y), 7)
 
     for road in city.roads:
         pg.draw.circle(window, road.traffic_light.state, road.traffic_light.position, 5)
 
 def createCar(city: City):
-    while True:
+    n = 0
+    while n < 100:
+        n += 1
         newCar = Car(city)
         if not newCar.road.traffic > newCar.road.maxSize:
             if newCar.road.traffic == 0:
                 newCar.road.cars_on_road.append(newCar)
                 newCar.road.traffic += 1
+                city.totalTraffic += 1
+                city.lstOfCars.append(newCar)
                 return newCar
             inFront = newCar.road.cars_on_road[-1]
             distance_to_car = ((newCar.x - inFront.x) ** 2 + (newCar.y - inFront.y) ** 2) ** 0.5
             if distance_to_car > 20:
                 newCar.road.cars_on_road.append(newCar)
                 newCar.road.traffic += 1
+                city.totalTraffic += 1
+                city.lstOfCars.append(newCar)
                 return newCar
 # print(car.currentNode, car.endNode)
 
@@ -73,7 +78,6 @@ def drawText(window, text, position, color=(255, 255, 255)):
     label = font.render(text, True, color)
     window.blit(label, position)
 
-
 def simulation(prev_state=None):
     """
     Funkcja symulacji, która zachowuje poprzednie wartości stanu symulacji.
@@ -115,7 +119,7 @@ def simulation(prev_state=None):
 
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
-                    c.lstOfCars.append(createCar(c))
+                    createCar(c)
 
                 #spawnig cars
                 if event.key == pg.K_ESCAPE:
@@ -139,8 +143,13 @@ def simulation(prev_state=None):
                     for road in c.roads:
                         road.traffic_light.state = 'green'
 
+                if event.key == pg.K_x:
+                    for road in c.roads:
+                        print(road.id, road.totalTraffic)
+
         if simulation_running:
-            c.lstOfCars.append(createCar(c))
+            if c.totalTraffic < 10000:
+                createCar(c)
 
         for car in c.lstOfCars:
             # Zatrzymywanie samochodu na czerwonym świetle

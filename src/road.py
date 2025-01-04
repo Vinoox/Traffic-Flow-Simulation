@@ -10,8 +10,9 @@ class Road:
         self.start = pos[0]  # (x, y)
         self.end = pos[1]    # (x, y)
         self.traffic = 0
+        self.totalTraffic = 0
         self.vector = self.getVector()
-        self.maxSize = self.lenght() // 3 + 1
+        self.maxSize = self.lenght() // 3
         self.color = 'green'
 
         self.cars_on_road = []
@@ -24,10 +25,6 @@ class Road:
         if self.traffic < self.maxSize * 0.2: self.color = 'orange'; return color['orange']
         self.color = 'red'; return color['red']
 
-        #
-        # if self.traffic * 3 >= self.lenght() - 6: self.isFull = True; print("Road is full")
-        # else: self.isFull = False
-        #
     
     def lenght(self):
         dx = self.end[0] - self.start[0]

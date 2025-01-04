@@ -18,7 +18,7 @@ class Car:
         self.currentNode = self.startNode
         self.startTime = time()
         self.endTime = 0
-        self.path = city.find_shortest_path(self.startNode, self.endNode)
+        self.path = self.city.find_shortest_path(self.startNode, self.endNode)
 
         self.pathIndex = 0
         self.nextNode = self.path[1]
@@ -39,6 +39,28 @@ class Car:
         for car in self.road.cars_on_road:
             car.count -= 1
 
+    def removeFromRoad(self):
+        self.reduceTraffic()
+        self.road.traffic -= 1
+        self.road.cars_on_road.pop(0)
+
+    def addToRoad(self):
+        self.changed = True
+        self.count = self.road.traffic
+        self.road.traffic += 1
+        self.road.totalTraffic += 1
+        self.road.cars_on_road.append(self)
+        self.vector = self.road.getVector()
+        self.x, self.y = self.road.start[0], self.road.start[1]
+
+    def updatePath(self):
+        self.newPath = self.city.find_shortest_path(self.currentNode, self.endNode)
+        if len(self.newPath) != len(self.path) - 1:
+            print(self.path)
+            print(self.newPath)
+        self.path = self.city.find_shortest_path(self.currentNode, self.endNode)
+        self.pathIndex = 0
+
     def move(self):
         dx, dy = self.vector
         self.x += dx * self.speed
@@ -51,9 +73,6 @@ class Car:
         """
         # Pobranie wektora kierunku ruchu
         dx, dy = self.vector
-
-        # if self.count < 0:
-        #     print("ERROR: count is -1")
 
         # Sprawdzanie odległości od innych samochodów
         if self.count <= 0:
@@ -81,7 +100,7 @@ class Car:
         dot_product = dx * direction_to_light[0] + dy * direction_to_light[1]
 
         # Jeśli jesteśmy blisko świateł i są czerwone, zatrzymujemy się
-        if dot_product > 0 and distance_to_light < 5 and self.count == 0:
+        if dot_product > 0 and distance_to_light < 5 and self.count <= 5:
             if self.road.traffic_light.state == 'red':
                 self.speed = 0 # Czekamy na zielone światło
             elif self.road.traffic_light.state == 'green':
@@ -91,38 +110,26 @@ class Car:
 
 
         # Sprawdzenie, czy dotarliśmy do kolejnego węzła
-        if abs(self.x - self.road.end[0]) < self.speed and abs(self.y - self.road.end[1]) < 10:
-            # if(self.count == 0):
+        if abs(self.x - self.road.end[0]) < self.speed and abs(self.y - self.road.end[1]) < 10 and self.count <= 0:
             if self.changed:
                 self.pathIndex += 1; self.changed = False
 
             if self.pathIndex < len(self.path) - 1:  # Zapewniamy, że jest następny węzeł
                 self.currentNode = self.path[self.pathIndex]
+                self.updatePath()
                 self.nextNode = self.path[self.pathIndex + 1]
                 road = self.city.getRoad((self.currentNode, self.nextNode))
-                if len(road.cars_on_road) != 0: distance_to_last_car = ((road.cars_on_road[-1].x - road.start[0]) ** 2 + (road.cars_on_road[-1].y - road.start[1]) ** 2) ** 0.5
-                if len(road.cars_on_road) == 0 or distance_to_last_car > 20:
-                    self.reduceTraffic()
-                    self.road.traffic -= 1  # Zmniejszamy ruch na drodze
-                    self.road.cars_on_road.pop(0)
+                if len(road.cars_on_road) != 0: 
+                    distance_to_last_car = ((road.cars_on_road[-1].x - road.start[0]) ** 2 + (road.cars_on_road[-1].y - road.start[1]) ** 2) ** 0.5
+                if len(road.cars_on_road) == 0 or distance_to_last_car > 5:
+                    self.removeFromRoad()
                     self.road = self.city.getRoad((self.currentNode, self.nextNode))
-                    self.changed = True
-                    self.speed = 0.5 * con.timeMultiplier
-                    #
-                    self.count = self.road.traffic
-                    self.road.traffic += 1
-                    self.road.cars_on_road.append(self)
-                    #
-                    
-                    self.vector = self.road.getVector()
-                    self.x, self.y = self.road.start[0], self.road.start[1]
+                    self.addToRoad()
                 else:
                     self.speed = 0
             else:
                 # Dotarliśmy do końca trasy
-                self.road.traffic -= 1
-                self.reduceTraffic()
-                self.road.cars_on_road.pop(0)
+                self.removeFromRoad()
                 self.currentNode = self.endNode
                 self.endTime = time()  # Rejestrujemy czas zakończenia
                 self.end = 1  # Oznaczamy, że dotarliśmy do celu

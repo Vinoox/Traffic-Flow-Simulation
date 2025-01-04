@@ -15,6 +15,7 @@ class City:
         self.cols = cols
         self.seed = seed
         self.lstOfCars = []
+        self.totalTraffic = 0
         random.seed(self.seed)  # Ustawienie seeda
 
         # generowanie modelu miasta
@@ -114,8 +115,8 @@ class City:
         x2, y2 = id[1]
         distance = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5  # Odległość euklidesowa
         if color == 'green': self.G[id[0]][id[1]]['weight'] = distance
-        elif color == 'orange': self.G[id[0]][id[1]]['weight'] = distance * 1.5
-        else: self.G[id[0]][id[1]]['weight'] = distance * 2
+        elif color == 'orange': self.G[id[0]][id[1]]['weight'] = distance * 1.25
+        else: self.G[id[0]][id[1]]['weight'] = distance * 1.95
 
     def find_shortest_path(self, source, target):
         """

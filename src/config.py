@@ -7,8 +7,8 @@ margin = 100
 fps = 144
 
 #graph parameter
-netRows = 10
-netCols = 10
+netRows = 3
+netCols = 2
 
 #time
 timeMultiplier = 1
