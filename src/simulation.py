@@ -26,30 +26,34 @@ def drawFrame(city: City, window):
 
     pg.draw.rect(window, (255, 255, 255), (minX, minY, maxX - minX, maxY - minY), 3)
 
-def createCar(city: City, start=(9, 9), end=(0, 0)):
-    n = 0
-    while n < 20:
-        n += 1
-        newCar = Car(city, start, end)
-        if not newCar.road.traffic > newCar.road.maxSize:
-            if newCar.road.traffic == 0:
-                newCar.road.cars_on_road.append(newCar)
-                newCar.road.traffic += 1
-                city.totalTraffic += 1
-                city.lstOfCars.append(newCar)
-                return 0
-            inFront = newCar.road.cars_on_road[-1]
-            distance_to_car = ((newCar.x - inFront.x) ** 2 + (newCar.y - inFront.y) ** 2) ** 0.5
-            if distance_to_car > 10:
-                newCar.road.cars_on_road.append(newCar)
-                newCar.road.traffic += 1
-                city.totalTraffic += 1
-                city.lstOfCars.append(newCar)
-                return 0
+def createCar(city: City, start=None, end=None):
+    if city.carsOnRoad < city.capacity // 100:
+    # if city.carsOnRoad < 2:
+        n = 0
+        while n < 5:
+            n += 1
+            newCar = Car(city, start, end)
+            if newCar.road.traffic < newCar.road.maxSize:
+                if newCar.road.traffic == 0:
+                    newCar.road.cars_on_road.append(newCar)
+                    newCar.road.traffic += 1
+                    city.totalTraffic += 1
+                    city.lstOfCars.append(newCar)
+                    return 0
+                inFront = newCar.road.cars_on_road[-1]
+                distance_to_car = ((newCar.x - inFront.x) ** 2 + (newCar.y - inFront.y) ** 2) ** 0.5
+                if distance_to_car > 10:
+                    newCar.road.cars_on_road.append(newCar)
+                    newCar.road.traffic += 1
+                    city.totalTraffic += 1
+                    city.lstOfCars.append(newCar)
+                    return 0
+        print("No space for car")
+    print("City is full")
     return 1
 # print(car.currentNode, car.endNode)
 
-def carSpawner(city: City, stop_event: threading.Event, interval=0.05):
+def carSpawner(city: City, stop_event: threading.Event, interval: float):
     while not stop_event.is_set():
         createCar(city)
         stop_event.wait(interval)
@@ -111,84 +115,110 @@ def simulation(window, clock):
     #     c = City(con.netRows, con.netCols, con.seed)
 
     c = City(con.netRows, con.netCols, con.seed)
+    print(f'City capacity: {c.capacity}')
     window = window
     stop_event = threading.Event()
     clock = clock
     running = True
     activeSpawning = False
+    simulationRunning = True
 
     while running:
-        # clock.tick(con.fps)
         drawCity(c, window)
         mouse_pos = pg.mouse.get_pos()
+        events = pg.event.get()
 
-        #city update
-        for road in c.roads:
-            c.update(road.id, road.color)
-
-        #light update
-        for junction in c.junctions:
-            junction.update_light()
-
-        for event in pg.event.get():
+        for event in events:
             if event.type == pg.QUIT:
                 running = False
 
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
-                    createCar(c)
-
-                #spawnig cars
-                if event.key == pg.K_ESCAPE:
-                    if not activeSpawning:
-                        activeSpawning = True
+                    if simulationRunning:
+                        simulationRunning = not simulationRunning
+                        stop_event.set()
+                        if carThread is not None:
+                            carThread.join()
+                            carThread = None
+                    else:
+                        simulationRunning = not simulationRunning
                         stop_event.clear()
                         stop_event = threading.Event()
-                        carThread = threading.Thread(target=carSpawner, args=(c, stop_event), daemon=True)
-                        carThread.start()
-                    else:
-                        activeSpawning = False
-                        stop_event.set()
-                        carThread.join()
-                        carThread = None
+                        if activeSpawning:
+                            carThread = threading.Thread(target=carSpawner, args=(c, stop_event, 0.05 / con.timeMultiplier), daemon=True)
+                            carThread.start()
+                
+        if simulationRunning:
+            #city update
+            for road in c.roads:
+                c.update(road.id, road.color)
 
-                #clear map
-                if event.key == pg.K_c:
-                    c.lstOfCars.clear()
-                    for road in c.roads:
-                        road.traffic = 0
-                        road.cars_on_road.clear()
+            #light update
+            for junction in c.junctions:
+                junction.update_light()
 
-                if event.key == pg.K_t:
-                    con.timeMultiplier = float(input("set time multipler: "))
+            for event in events:
+                if event.type == pg.KEYDOWN:
+                    if event.key == pg.K_t:
+                        con.timeMultiplier = float(input("set time multipler: "))
+                        if activeSpawning:
+                            stop_event.set()
+                            carThread.join()
 
-                if event.key == pg.K_r:
-                    for road in c.roads:
-                        road.traffic_light.state = 'red'
+                            stop_event.clear()
+                            carThread = threading.Thread(target=carSpawner, args=(c, stop_event, 0.05 / con.timeMultiplier), daemon=True)
+                            carThread.start()
 
-                if event.key == pg.K_g:
-                    for road in c.roads:
-                        road.traffic_light.state = 'green'
 
-                if event.key == pg.K_x:
-                    for road in c.roads:
-                        print(road.id, road.totalTraffic)
+                    if event.key == pg.K_TAB:
+                        createCar(c)
 
-        # if activeSpawning:
-        #     if c.totalTraffic < 10000:
-        #         # createCar(c)
-        #         carSpawner(c, threading.Event(), 1)
+                    #spawnig cars
+                    if event.key == pg.K_ESCAPE:
+                        if not activeSpawning:
+                            activeSpawning = True
+                            stop_event.clear()
+                            stop_event = threading.Event()
+                            carThread = threading.Thread(target=carSpawner, args=(c, stop_event, 0.05 / con.timeMultiplier), daemon=True)
+                            carThread.start()
+                        else:
+                            activeSpawning = False
+                            stop_event.set()
+                            carThread.join()
+                            carThread = None
 
-        for car in c.lstOfCars:
-            # Zatrzymywanie samochodu na czerwonym świetle
-            car.update()
-            car.move()
-            if car.end:
-                c.lstOfCars.remove(car)
+                    #clear map
+                    if event.key == pg.K_c:
+                        c.lstOfCars.clear()
+                        for road in c.roads:
+                            road.traffic = 0
+                            road.cars_on_road.clear()
+
+                    if event.key == pg.K_r:
+                        for road in c.roads:
+                            road.traffic_light.state = 'red'
+
+                    if event.key == pg.K_g:
+                        for road in c.roads:
+                            road.traffic_light.state = 'green'
+
+                    if event.key == pg.K_x:
+                        for road in c.roads:
+                            print(road.id, road.totalTraffic)
+
+            for car in c.lstOfCars:
+                # Zatrzymywanie samochodu na czerwonym świetle
+                car.update()
+                car.move()
+                if car.end:
+                    c.lstOfCars.remove(car)
+                
+        for car in c.lstOfCars:    
             drawCar(car, window)
 
         drawText(window, f'fps: {clock.get_fps():.1f}', (1700, 40), (255, 255, 255))
         drawText(window, f'cars: {len(c.lstOfCars)}', (1700, 60), (255, 255, 255))
+        drawText(window, f'Sim running: {simulationRunning}', (1700, 80), (255, 255, 255))
 
         pg.display.flip()
         clock.tick(con.fps)

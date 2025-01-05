@@ -1,6 +1,3 @@
-import sys
-import ctypes
-
 seed = 53211
 
 #window parameter

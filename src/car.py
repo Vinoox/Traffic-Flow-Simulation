@@ -15,6 +15,7 @@ class Car:
 
         if startNode is None:
             self.startNode = random.choice(self.nodes)
+            self.nodes.remove(self.startNode)
         else:
             self.startNode = startNode
 
@@ -125,7 +126,7 @@ class Car:
 
             if self.pathIndex < len(self.path) - 1:  # Zapewniamy, że jest następny węzeł
                 self.currentNode = self.path[self.pathIndex]
-                # self.updatePath()
+                self.updatePath()
                 self.nextNode = self.path[self.pathIndex + 1]
                 road = self.city.getRoad((self.currentNode, self.nextNode))
                 if len(road.cars_on_road) != 0: 

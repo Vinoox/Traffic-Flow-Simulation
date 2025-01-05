@@ -15,7 +15,9 @@ class City:
         self.cols = cols
         self.seed = seed
         self.lstOfCars = []
+        self.carsOnRoad = 0
         self.totalTraffic = 0
+        self.capacity = 0
         random.seed(self.seed)  # Ustawienie seeda
 
         # generowanie modelu miasta
@@ -31,6 +33,8 @@ class City:
         self.junctions = [Junction(id, pos) for id, pos in self.scalePos.items()]
         self.roads = [Road(key, val) for key, val in self.scaleEdges.items()]
         for road in self.roads:
+            self.capacity += road.maxSize
+
             for junction in self.junctions:
                 if road.id[0] == junction.id:
                     junction.roadsFrom.append(road)
@@ -111,6 +115,7 @@ class City:
             self.G[u][v]['weight'] = distance
 
     def update(self, id, color):
+        self.carsOnRoad = len(self.lstOfCars)
         x1, y1 = id[0]
         x2, y2 = id[1]
         distance = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5  # Odległość euklidesowa
