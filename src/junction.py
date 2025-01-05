@@ -15,14 +15,19 @@ class Junction():
         self.time = time()
         self.initial = True
         self.counter = 0
+
+        #high light
         self.active = False
+        self.start = False
+        self.end = False
+
 
     def getColor(self):
         if self.active: return color['blue']
         return color['white']
 
     def pos(self):
-        return self.x, self.y
+        return (self.x, self.y)
 
     def update_light(self):
         if self.initial:

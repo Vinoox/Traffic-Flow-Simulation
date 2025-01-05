@@ -47,7 +47,15 @@ class Car:
         self.end = 0
 
         self.active = False
+        
+    def getSize(self):
+        if self.active: return 5
+        else: return 3
 
+    def getColor(self):
+        if self.active:
+            return (255, 0, 255)
+        else: return (51, 204, 255)
 
     def reduceTraffic(self):
         for car in self.road.cars_on_road:

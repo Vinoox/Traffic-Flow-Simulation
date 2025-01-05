@@ -16,12 +16,15 @@ def drawCity(city: City, window):
 
     for junction in city.junctions:
         pg.draw.circle(window, junction.getColor(), (junction.x, junction.y), 10)
+        if junction.start: drawText(window, 'S', (junction.pos()[0] - 5, junction.pos()[1] - 5), (255, 255, 255), 20)
+        if junction.end: drawText(window, 'E', (junction.pos()[0] - 5, junction.pos()[1] - 5), (255, 255, 255), 20)
 
     for road in city.roads:
         pg.draw.circle(window, road.traffic_light.state, road.traffic_light.position, 5)
 
     for car in city.lstOfCars:
-        pg.draw.circle(window, (51, 204, 255), (car.x, car.y), 3)
+        pg.draw.circle(window, (0, 0, 0), (car.x, car.y), car.getSize())
+        pg.draw.circle(window, car.getColor(), (car.x, car.y), car.getSize() - 1)
 
 def drawFrame(city: City, window):
     x = [val[0] for val in city.scalePos.values()]
@@ -122,14 +125,19 @@ def checkIfClose(city: City, mouse_pos, window):
             return road
     return 0
 
-def drawText(window, text, position, color=(255, 255, 255)):
-    font = pg.font.Font(None, 30)
+def drawText(window, text, position, color=(255, 255, 255), size=30):
+    font = pg.font.Font(None, size)
     label = font.render(text, True, color)
     window.blit(label, position)
 
 def highLightRoute(car: Car):
-    car.city.getJunction(car.startNode).active = True
-    car.city.getJunction(car.endNode).active = True
+    startJunction = car.city.getJunction(car.startNode)
+    startJunction.active = True
+    startJunction.start = True
+
+    endJunction = car.city.getJunction(car.endNode)
+    endJunction.active = True
+    endJunction.end = True
 
     for x in range(len(car.path) - 1):
         car.city.getRoad((car.path[x], car.path[x + 1])).active = True
@@ -138,6 +146,8 @@ def highLightRoute(car: Car):
 def unHighLight(city: City):
     for junction in city.junctions:
         junction.active = False
+        junction.start = False
+        junction.end = False
 
     for road in city.roads:
         road.active = False
@@ -204,6 +214,10 @@ def simulation(window, clock):
                         unHighLight(c)
                         object.active = True
                         highLightRoute(object)
+                    elif type(object) == Junction:
+                        for car in c.lstOfCars:
+                            if car.endNode == junction.id:
+                                car.active = True
                     else:
                         unHighLight(c)
 
