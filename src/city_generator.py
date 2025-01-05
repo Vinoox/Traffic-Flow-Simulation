@@ -48,6 +48,11 @@ class City:
         for road in self.roads:
             if id == road.id:
                 return road
+            
+    def getJunction(self, id: tuple):
+        for junction in self.junctions:
+            if id == junction.id:
+                return junction
 
     def scale(self, pos: tuple):
         self.X = [val[0] for val in self.pos.values()]

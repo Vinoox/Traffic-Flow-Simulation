@@ -5,8 +5,9 @@ import config as con
 
 
 class Car:
-    def __init__(self, city: City, startNode=None, endNode=None):
+    def __init__(self, city: City, id, startNode=None, endNode=None):
         self.city = city
+        self.id = id
         self.nodes = list(city.G.nodes())
         if startNode is not None:
             self.nodes.remove(startNode)
@@ -45,6 +46,9 @@ class Car:
         self.speed = 0.5 * con.timeMultiplier
         self.end = 0
 
+        self.active = False
+
+
     def reduceTraffic(self):
         for car in self.road.cars_on_road:
             car.count -= 1
@@ -65,9 +69,6 @@ class Car:
 
     def updatePath(self):
         self.newPath = self.city.find_shortest_path(self.currentNode, self.endNode)
-        if self.newPath != self.path[1:]:
-            print(self.path)
-            print(self.newPath)
         self.path = self.city.find_shortest_path(self.currentNode, self.endNode)
         self.pathIndex = 0
 
@@ -126,7 +127,7 @@ class Car:
 
             if self.pathIndex < len(self.path) - 1:  # Zapewniamy, że jest następny węzeł
                 self.currentNode = self.path[self.pathIndex]
-                self.updatePath()
+                # self.updatePath()
                 self.nextNode = self.path[self.pathIndex + 1]
                 road = self.city.getRoad((self.currentNode, self.nextNode))
                 if len(road.cars_on_road) != 0: 

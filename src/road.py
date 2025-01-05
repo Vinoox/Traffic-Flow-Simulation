@@ -1,6 +1,7 @@
 color = {'red': (255, 0, 0),
          'green': (0, 255, 0),
-         'orange': (221, 244, 7)}
+         'orange': (221, 244, 7),
+         'blue': (0, 0, 255)}
 
 from traffic_light import TrafficLight
 
@@ -13,17 +14,29 @@ class Road:
         self.totalTraffic = 0
         self.vector = self.getVector()
         self.maxSize = self.lenght() // 3
-        self.color = 'green'
+        self.trafficColor = 'green'
 
         self.cars_on_road = []
 
         # Tworzenie światła na podstawie pozycji drogi
         self.traffic_light = TrafficLight(self.end, self.vector)
 
-    def setColor(self):
-        if self.traffic < self.maxSize * 0.1: self.color = 'green' ; return color['green']
-        if self.traffic < self.maxSize * 0.2: self.color = 'orange'; return color['orange']
-        self.color = 'red'; return color['red']
+        self.active = False
+
+    def getColor(self):
+        if self.active: return color['blue']
+        else: return self.trafficColor
+
+
+    def setColor(self): 
+        if self.traffic < self.maxSize * 0.1: 
+            self.trafficColor = 'green'
+        elif self.traffic < self.maxSize * 0.2: 
+            self.trafficColor = 'orange'
+        else: 
+            self.trafficColor = 'red'
+
+        return  0
 
     
     def lenght(self):
