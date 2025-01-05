@@ -5,14 +5,23 @@ import config as con
 
 
 class Car:
-    def __init__(self, city: City):
+    def __init__(self, city: City, startNode=None, endNode=None):
         self.city = city
-
-        #choose start and end node
         self.nodes = list(city.G.nodes())
-        self.startNode = random.choice(self.nodes)
-        self.nodes.remove(self.startNode)
-        self.endNode = random.choice(self.nodes)
+        if startNode is not None:
+            self.nodes.remove(startNode)
+        if endNode is not None:
+            self.nodes.remove(endNode)
+
+        if startNode is None:
+            self.startNode = random.choice(self.nodes)
+        else:
+            self.startNode = startNode
+
+        if endNode is None:
+            self.endNode = random.choice(self.nodes)
+        else:
+            self.endNode = endNode
 
 
         self.currentNode = self.startNode
@@ -55,7 +64,7 @@ class Car:
 
     def updatePath(self):
         self.newPath = self.city.find_shortest_path(self.currentNode, self.endNode)
-        if len(self.newPath) != len(self.path) - 1:
+        if self.newPath != self.path[1:]:
             print(self.path)
             print(self.newPath)
         self.path = self.city.find_shortest_path(self.currentNode, self.endNode)

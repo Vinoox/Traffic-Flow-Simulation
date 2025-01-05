@@ -3,38 +3,49 @@ import pygame as pg
 import config as con
 from car import Car
 from time import time
+
 def drawCity(city: City, window):
     window.fill((0, 0, 0))
+    drawFrame(city, window)
 
     for road in city.roads:            
         pg.draw.aaline(window, road.setColor(), road.start, road.end, 0)
 
     for junction in city.junctions:
-        pg.draw.circle(window, (255, 255, 255), (junction.x, junction.y), 7)
+        pg.draw.circle(window, (255, 255, 255), (junction.x, junction.y), 10)
 
     for road in city.roads:
         pg.draw.circle(window, road.traffic_light.state, road.traffic_light.position, 5)
 
-def createCar(city: City):
+def drawFrame(city: City, window):
+    x = [val[0] for val in city.scalePos.values()]
+    y = [val[1] for val in city.scalePos.values()]
+    minX, maxX = min(x) - 15, max(x) + 15
+    minY, maxY = min(y) - 15, max(y) + 15
+
+    pg.draw.rect(window, (255, 255, 255), (minX, minY, maxX - minX, maxY - minY), 3)
+
+def createCar(city: City, start=(9, 9), end=(0, 0)):
     n = 0
     while n < 100:
         n += 1
-        newCar = Car(city)
+        newCar = Car(city, start, end)
         if not newCar.road.traffic > newCar.road.maxSize:
             if newCar.road.traffic == 0:
                 newCar.road.cars_on_road.append(newCar)
                 newCar.road.traffic += 1
                 city.totalTraffic += 1
                 city.lstOfCars.append(newCar)
-                return newCar
+                return 0
             inFront = newCar.road.cars_on_road[-1]
             distance_to_car = ((newCar.x - inFront.x) ** 2 + (newCar.y - inFront.y) ** 2) ** 0.5
-            if distance_to_car > 20:
+            if distance_to_car > 10:
                 newCar.road.cars_on_road.append(newCar)
                 newCar.road.traffic += 1
                 city.totalTraffic += 1
                 city.lstOfCars.append(newCar)
-                return newCar
+                return 0
+    return 1
 # print(car.currentNode, car.endNode)
 
 def drawCar(car: Car, window):
@@ -78,7 +89,7 @@ def drawText(window, text, position, color=(255, 255, 255)):
     label = font.render(text, True, color)
     window.blit(label, position)
 
-def simulation(prev_state=None):
+def simulation(window, clock):
     """
     Funkcja symulacji, która zachowuje poprzednie wartości stanu symulacji.
 
@@ -86,22 +97,21 @@ def simulation(prev_state=None):
         prev_state (dict): Słownik zawierający poprzednie wartości symulacji,
                            takie jak miasto, lista samochodów itp.
     """
-    # Jeśli istnieje poprzedni stan, go wykorzystujemy
-    if prev_state:
-        c = prev_state['city']
-    else:
-        # Inicjalizacja nowego stanu, jeśli brak poprzedniego
-        c = City(con.netRows, con.netCols, con.seed)
+    # # Jeśli istnieje poprzedni stan, go wykorzystujemy
+    # if prev_state:
+    #     c = prev_state['city']
+    # else:
+    #     # Inicjalizacja nowego stanu, jeśli brak poprzedniego
+    #     c = City(con.netRows, con.netCols, con.seed)
 
-    pg.init()
-    window = pg.display.set_mode((con.winWidth, con.winHeight), pg.RESIZABLE)
-    pg.display.set_caption("Graf miasta")
-    clock = pg.time.Clock()
+    c = City(con.netRows, con.netCols, con.seed)
+    window = window
+    clock = clock
     running = True
-    simulation_running = prev_state['running'] if prev_state else False
+    simulation_running = False
 
     while running:
-        clock.tick(con.fps)
+        # clock.tick(con.fps)
         drawCity(c, window)
         mouse_pos = pg.mouse.get_pos()
 
@@ -164,5 +174,3 @@ def simulation(prev_state=None):
 
         pg.display.flip()
         clock.tick(con.fps)
-
-    pg.quit()

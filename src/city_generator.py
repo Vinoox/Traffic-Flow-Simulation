@@ -55,8 +55,8 @@ class City:
         y = (pos[1] - self.minY) / (self.maxY - self.minY)
 
         # Przekształcenie na piksele (odwrócenie osi, jeśli trzeba):
-        x_pixel = int(x * (con.winWidth - 2 * con.margin) + con.margin)
-        y_pixel = int((1 - y) * (con.winHeight - 2 * con.margin) + con.margin)  # Odwrócenie Y
+        x_pixel = int(x * (con.winWidth - 2 * con.margin) + con.margin / 2)
+        y_pixel = int((1 - y) * (con.winHeight - 2 * con.margin) + con.margin/4)  # Odwrócenie Y
 
         return x_pixel, y_pixel
 
