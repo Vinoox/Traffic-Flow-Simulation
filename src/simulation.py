@@ -1,5 +1,6 @@
 from city_generator import City
 import pygame as pg
+import threading
 import config as con
 from car import Car
 from time import time
@@ -27,7 +28,7 @@ def drawFrame(city: City, window):
 
 def createCar(city: City, start=(9, 9), end=(0, 0)):
     n = 0
-    while n < 100:
+    while n < 20:
         n += 1
         newCar = Car(city, start, end)
         if not newCar.road.traffic > newCar.road.maxSize:
@@ -47,6 +48,11 @@ def createCar(city: City, start=(9, 9), end=(0, 0)):
                 return 0
     return 1
 # print(car.currentNode, car.endNode)
+
+def carSpawner(city: City, stop_event: threading.Event, interval=0.05):
+    while not stop_event.is_set():
+        createCar(city)
+        stop_event.wait(interval)
 
 def drawCar(car: Car, window):
     pg.draw.circle(window, (51, 204, 255), (car.x, car.y), 3)
@@ -106,9 +112,10 @@ def simulation(window, clock):
 
     c = City(con.netRows, con.netCols, con.seed)
     window = window
+    stop_event = threading.Event()
     clock = clock
     running = True
-    simulation_running = False
+    activeSpawning = False
 
     while running:
         # clock.tick(con.fps)
@@ -133,7 +140,17 @@ def simulation(window, clock):
 
                 #spawnig cars
                 if event.key == pg.K_ESCAPE:
-                    simulation_running = not simulation_running
+                    if not activeSpawning:
+                        activeSpawning = True
+                        stop_event.clear()
+                        stop_event = threading.Event()
+                        carThread = threading.Thread(target=carSpawner, args=(c, stop_event), daemon=True)
+                        carThread.start()
+                    else:
+                        activeSpawning = False
+                        stop_event.set()
+                        carThread.join()
+                        carThread = None
 
                 #clear map
                 if event.key == pg.K_c:
@@ -157,9 +174,10 @@ def simulation(window, clock):
                     for road in c.roads:
                         print(road.id, road.totalTraffic)
 
-        if simulation_running:
-            if c.totalTraffic < 10000:
-                createCar(c)
+        # if activeSpawning:
+        #     if c.totalTraffic < 10000:
+        #         # createCar(c)
+        #         carSpawner(c, threading.Event(), 1)
 
         for car in c.lstOfCars:
             # Zatrzymywanie samochodu na czerwonym świetle
