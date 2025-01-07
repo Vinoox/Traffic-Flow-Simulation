@@ -125,15 +125,14 @@ class City:
         x2, y2 = id[1]
         distance = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5  # Odległość euklidesowa
         if color == 'green': self.G[id[0]][id[1]]['weight'] = distance
-        elif color == 'orange': self.G[id[0]][id[1]]['weight'] = distance * 1.25
-        else: self.G[id[0]][id[1]]['weight'] = distance * 1.95
+        elif color == 'orange': self.G[id[0]][id[1]]['weight'] = distance * 2
+        else: self.G[id[0]][id[1]]['weight'] = distance * 3
 
     def find_shortest_path(self, source, target):
         """
         Znajdowanie najkrótszej ścieżki w grafie z uwzględnieniem wag (algorytm Dijkstry).
         """
-        shortest_path = nx.shortest_path(self.G, source=source, target=target, weight='weight')
-        # path_length = nx.shortest_path_length(self.G, source=source, target=target, weight='weight')
+        shortest_path = nx.dijkstra_path(self.G, source=source, target=target, weight='weight')
         return shortest_path
 
     def draw(self, shortest_path=None):

@@ -12,6 +12,7 @@ class Road:
         self.end = pos[1]    # (x, y)
         self.traffic = 0
         self.totalTraffic = 0
+        self.normalizedCount = 0
         self.vector = self.getVector()
         self.maxSize = self.lenght() // 3
         self.trafficColor = 'green'
@@ -25,7 +26,7 @@ class Road:
 
     def getColor(self):
         if self.active: return color['blue']
-        else: return self.trafficColor
+        else: return color[self.trafficColor]
 
 
     def setColor(self): 

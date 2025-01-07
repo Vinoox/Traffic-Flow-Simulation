@@ -8,7 +8,7 @@ fps = 1000
 
 #graph parameter
 netRows = 10
-netCols = 8
+netCols = 10
 
 #time
 timeMultiplier = 1

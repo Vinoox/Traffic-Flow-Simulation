@@ -1,4 +1,3 @@
-import sys
 import ctypes
 import pygame as pg
 import config as con
@@ -17,8 +16,10 @@ if __name__ == "__main__":
     clock.tick(con.fps)
 
 
-    simulation(window, clock)
+    #start window
+    city = simulation(window, clock)
     
+    #end window
     
     
     pg.quit()

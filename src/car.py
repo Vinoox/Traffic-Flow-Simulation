@@ -43,9 +43,10 @@ class Car:
         self.y = self.road.start[1] + self.vector[1] * 10
         pos = (self.x, self.y)
 
-        self.speed = 0.5 * con.timeMultiplier
+        self.speed = 10 * con.timeMultiplier
         self.end = 0
 
+        self.passRoute = [self.startNode]
         self.active = False
         
     def getSize(self):
@@ -76,7 +77,6 @@ class Car:
         self.x, self.y = self.road.start[0], self.road.start[1]
 
     def updatePath(self):
-        self.newPath = self.city.find_shortest_path(self.currentNode, self.endNode)
         self.path = self.city.find_shortest_path(self.currentNode, self.endNode)
         self.pathIndex = 0
 
@@ -135,7 +135,9 @@ class Car:
 
             if self.pathIndex < len(self.path) - 1:  # Zapewniamy, że jest następny węzeł
                 self.currentNode = self.path[self.pathIndex]
-                # self.updatePath()
+                self.updatePath()
+                self.passRoute.append(self.currentNode)
+
                 self.nextNode = self.path[self.pathIndex + 1]
                 road = self.city.getRoad((self.currentNode, self.nextNode))
                 if len(road.cars_on_road) != 0: 
