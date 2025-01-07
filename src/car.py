@@ -28,7 +28,7 @@ class Car:
 
         self.currentNode = self.startNode
         self.startTime = time()
-        self.endTime = 0
+        self.existTime = time() - self.startTime
         self.path = self.city.find_shortest_path(self.startNode, self.endNode)
 
         self.pathIndex = 0
@@ -85,6 +85,9 @@ class Car:
         self.x += dx * self.speed
         self.y += dy * self.speed
 
+    def timeUpdate(self, time):
+        self.startTime += time
+
     def update(self):
         """
         Ruch samochodu z uwzględnieniem innych samochodów na tej samej drodze
@@ -92,6 +95,7 @@ class Car:
         """
         # Pobranie wektora kierunku ruchu
         dx, dy = self.vector
+        self.existTime = time() - self.startTime
 
         # Sprawdzanie odległości od innych samochodów
         if self.count <= 0:
@@ -136,7 +140,6 @@ class Car:
             if self.pathIndex < len(self.path) - 1:  # Zapewniamy, że jest następny węzeł
                 self.currentNode = self.path[self.pathIndex]
                 self.updatePath()
-                self.passRoute.append(self.currentNode)
 
                 self.nextNode = self.path[self.pathIndex + 1]
                 road = self.city.getRoad((self.currentNode, self.nextNode))
@@ -144,6 +147,7 @@ class Car:
                     distance_to_last_car = ((road.cars_on_road[-1].x - road.start[0]) ** 2 + (road.cars_on_road[-1].y - road.start[1]) ** 2) ** 0.5
                 if len(road.cars_on_road) == 0 or distance_to_last_car > 5:
                     self.removeFromRoad()
+                    self.passRoute.append(self.currentNode)
                     self.road = self.city.getRoad((self.currentNode, self.nextNode))
                     self.addToRoad()
                 else:

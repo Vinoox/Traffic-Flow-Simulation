@@ -21,7 +21,6 @@ class Junction():
         self.start = False
         self.end = False
 
-
     def getColor(self):
         if self.active: return color['blue']
         return color['white']
@@ -38,3 +37,6 @@ class Junction():
             self.counter = 0 if self.counter == len(self.roadsTo) - 1 else self.counter + 1
             self.roadsTo[self.counter].traffic_light.state = 'green'
             self.time = time()
+
+    def timeUpdate(self, time):
+        self.time += time
