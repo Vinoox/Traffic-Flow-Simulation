@@ -4,6 +4,7 @@ import threading
 import config as con
 from car import Car
 from junction import Junction
+from backgournd_task import Task
 from time import time
 
 def drawCity(city: City, window):
@@ -60,11 +61,6 @@ def createCar(city: City, start=None, end=None):
     print("City is full")
     return 1
     # print(car.currentNode, car.endNode)
-
-def carSpawner(city: City, stop_event: threading.Event, interval: float):
-    while not stop_event.is_set():
-        createCar(city)
-        stop_event.wait(interval)
 
 def isMouseNearRoad(mouse_pos, road, tolerance=3):
     x1, y1 = road.start
@@ -180,47 +176,25 @@ def simUpdate(city: City):
             if car.active: unHighLight(city)
             city.lstOfCars.remove(car)
 
-def simRunning(city: City, stop_event: threading.Event, interval: float):
-    while not stop_event.is_set():
-        simUpdate(city)
-        stop_event.wait(interval)
-
 def simulation(window, clock):
-    """
-    Funkcja symulacji, która zachowuje poprzednie wartości stanu symulacji.
-
-    Args:
-        prev_state (dict): Słownik zawierający poprzednie wartości symulacji,
-                           takie jak miasto, lista samochodów itp.
-    """
-    # # Jeśli istnieje poprzedni stan, go wykorzystujemy
-    # if prev_state:
-    #     c = prev_state['city']
-    # else:
-    #     # Inicjalizacja nowego stanu, jeśli brak poprzedniego
-    #     c = City(con.netRows, con.netCols, con.seed)
+ 
 
     c = City(con.netRows, con.netCols, con.seed)
     window = window
-    stop_event_car_spawning = threading.Event()
-    stop_event_simulation = threading.Event()
+    simulator = Task(c, simUpdate, 0.015625)
+    carSpawner = Task(c, createCar, 0.01)
     clock = clock
     running = True
     activeSpawning = False
     simulationRunning = True
-    carThread = None
-    simThread = None
     stopTime = 0
+    simulator.start()
 
     while running:
         drawCity(c, window)
         mouse_pos = pg.mouse.get_pos()
         events = pg.event.get()
         checkIfClose(c, mouse_pos, window)
-
-        if simThread == None and simulationRunning:
-            simThread = threading.Thread(target=simRunning, args=(c, stop_event_simulation, 0.015625), daemon=True)
-            simThread.start()
 
         for event in events:
             if event.type == pg.QUIT:
@@ -231,16 +205,8 @@ def simulation(window, clock):
                     if simulationRunning:
                         simulationRunning = not simulationRunning
                         stopTime = time()
-
-                        stop_event_car_spawning.set()
-                        if carThread is not None:
-                            carThread.join()
-                            carThread = None
-
-                        stop_event_simulation.set()
-                        if simThread is not None:
-                            simThread.join()
-                            simThread = None
+                        if activeSpawning: carSpawner.stop()
+                        simulator.stop()
 
                     else:
                         simulationRunning = not simulationRunning
@@ -250,55 +216,34 @@ def simulation(window, clock):
                         for junction in c.junctions:
                             junction.timeUpdate(time() - stopTime)
 
-                        stop_event_simulation.clear()
-                        stop_event_simulation = threading.Event()
-                        simThread = threading.Thread(target=simRunning, args=(c, stop_event_simulation, 0.015625), daemon=True)
-                        simThread.start()
-
-                        if activeSpawning:
-                            stop_event_car_spawning.clear()
-                            stop_event_car_spawning = threading.Event()
-                            carThread = threading.Thread(target=carSpawner, args=(c, stop_event_car_spawning, 0.001 / con.timeMultiplier), daemon=True)
-                            carThread.start()
+                        simulator.start()
+                        if activeSpawning: carSpawner.start()
                             
-
                 if event.key == pg.K_ESCAPE:
                     if not activeSpawning:
                         activeSpawning = True
                         if simulationRunning:
-                            stop_event_car_spawning.clear()
-                            stop_event_car_spawning = threading.Event()
-                            carThread = threading.Thread(target=carSpawner, args=(c, stop_event_car_spawning, 0.001 / con.timeMultiplier), daemon=True)
-                            carThread.start()
+                            carSpawner.start()
                     else:
                         activeSpawning = False
-                        stop_event_car_spawning.set()
-                        if carThread != None: carThread.join()
-                        carThread = None
+                        carSpawner.stop()
 
-                # if event.key == pg.K_BACKSPACE:
-                #     running = False
-                #     activeSpawning = False
-                #     stop_event_car_spawning.set()
-                #     if carThread != None:
-                #         carThread.join()
-                #         carThread = None
+                if event.key == pg.K_BACKSPACE:
+                    running = False
+                    activeSpawning = False
+                    carSpawner.stop()
+                    simulator.stop()
 
                 if event.key == pg.K_t:
                     con.timeMultiplier = float(input("set time multipler: "))
                     if activeSpawning:
-                        stop_event_car_spawning.set()
-                        carThread.join()
-
-                        stop_event_car_spawning.clear()
-                        carThread = threading.Thread(target=carSpawner, args=(c, stop_event_car_spawning, 0.001 / con.timeMultiplier), daemon=True)
-                        carThread.start()
+                        carSpawner.stop()
+                        carSpawner.start()
 
                 if event.key == pg.K_TAB:
                     unHighLight(c)
                     car = createCar(c)
                     if car != 1: highLightRoute(car)
-
 
                 if event.key == pg.K_c:
                     c.lstOfCars.clear()
@@ -333,9 +278,6 @@ def simulation(window, clock):
                     else:
                         unHighLight(c)
             
-
-            # for car in c.lstOfCars:
-            #     car.move()
             
         
         drawText(window, f'fps: {clock.get_fps():.1f}', (1700, 40), (255, 255, 255))
