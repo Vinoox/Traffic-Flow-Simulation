@@ -16,7 +16,6 @@ class Road:
         self.vector = self.getVector()
         self.maxSize = self.lenght() // 3
         self.trafficColor = 'green'
-
         self.cars_on_road = []
 
         # Tworzenie światła na podstawie pozycji drogi
@@ -28,7 +27,6 @@ class Road:
         if self.active: return color['blue']
         else: return color[self.trafficColor]
 
-
     def setColor(self): 
         if self.traffic < self.maxSize * 0.1: 
             self.trafficColor = 'green'
@@ -38,7 +36,6 @@ class Road:
             self.trafficColor = 'red'
 
         return  0
-
     
     def lenght(self):
         dx = self.end[0] - self.start[0]
@@ -68,3 +65,10 @@ class Road:
             dy /= length
 
         return dx, dy
+    
+    def isSpace(self):
+        if len(self.cars_on_road) == 0: return True
+        else:
+            distance_to_last_car = ((self.cars_on_road[-1].x - self.start[0]) ** 2 + (self.cars_on_road[-1].y - self.start[1]) ** 2) ** 0.5
+            if distance_to_last_car > 5: return True
+        return False

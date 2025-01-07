@@ -132,6 +132,7 @@ def drawText(window, text, position, color=(255, 255, 255), size=30):
     window.blit(label, position)
 
 def highLightRoute(car: Car):
+    car.active = True
     startJunction = car.city.getJunction(car.startNode)
     startJunction.active = True
     startJunction.start = True
@@ -169,12 +170,10 @@ def simUpdate(city: City):
         junction.update_light()
 
     for car in city.lstOfCars:
-        # Zatrzymywanie samochodu na czerwonym świetle
         car.update()
         car.move()
-        if car.active: 
+        if car.active and car.updatedPath: 
             unHighLight(city)
-            car.active = True
             highLightRoute(car)
 
         if car.end:
@@ -232,6 +231,7 @@ def simulation(window, clock):
                     if simulationRunning:
                         simulationRunning = not simulationRunning
                         stopTime = time()
+
                         stop_event_car_spawning.set()
                         if carThread is not None:
                             carThread.join()
@@ -255,26 +255,34 @@ def simulation(window, clock):
                         simThread = threading.Thread(target=simRunning, args=(c, stop_event_simulation, 0.015625), daemon=True)
                         simThread.start()
 
+                        if activeSpawning:
+                            stop_event_car_spawning.clear()
+                            stop_event_car_spawning = threading.Event()
+                            carThread = threading.Thread(target=carSpawner, args=(c, stop_event_car_spawning, 0.001 / con.timeMultiplier), daemon=True)
+                            carThread.start()
+                            
+
                 if event.key == pg.K_ESCAPE:
                     if not activeSpawning:
                         activeSpawning = True
-                        stop_event_car_spawning.clear()
-                        stop_event_car_spawning = threading.Event()
-                        carThread = threading.Thread(target=carSpawner, args=(c, stop_event_car_spawning, 0.001 / con.timeMultiplier), daemon=True)
-                        carThread.start()
+                        if simulationRunning:
+                            stop_event_car_spawning.clear()
+                            stop_event_car_spawning = threading.Event()
+                            carThread = threading.Thread(target=carSpawner, args=(c, stop_event_car_spawning, 0.001 / con.timeMultiplier), daemon=True)
+                            carThread.start()
                     else:
                         activeSpawning = False
                         stop_event_car_spawning.set()
                         if carThread != None: carThread.join()
                         carThread = None
 
-                if event.key == pg.K_BACKSPACE:
-                    running = False
-                    activeSpawning = False
-                    stop_event_car_spawning.set()
-                    if carThread != None:
-                        carThread.join()
-                        carThread = None
+                # if event.key == pg.K_BACKSPACE:
+                #     running = False
+                #     activeSpawning = False
+                #     stop_event_car_spawning.set()
+                #     if carThread != None:
+                #         carThread.join()
+                #         carThread = None
 
                 if event.key == pg.K_t:
                     con.timeMultiplier = float(input("set time multipler: "))
@@ -313,7 +321,6 @@ def simulation(window, clock):
                     object = checkIfClose(c, mouse_pos, window)
                     if type(object) == Car:
                         unHighLight(c)
-                        object.active = True
                         highLightRoute(object)
                     elif type(object) == Junction:
                         unHighLight(c)
@@ -327,6 +334,7 @@ def simulation(window, clock):
             # for car in c.lstOfCars:
             #     car.move()
             
+        
         drawText(window, f'fps: {clock.get_fps():.1f}', (1700, 40), (255, 255, 255))
         drawText(window, f'cars: {len(c.lstOfCars)}', (1700, 60), (255, 255, 255))
         drawText(window, f'Sim running: {simulationRunning}', (1700, 80), (255, 255, 255))

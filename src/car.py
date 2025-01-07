@@ -28,7 +28,7 @@ class Car:
 
         self.currentNode = self.startNode
         self.startTime = time()
-        self.existTime = time() - self.startTime
+        self.existTime = (time() - self.startTime) * con.timeMultiplier
         self.path = self.city.find_shortest_path(self.startNode, self.endNode)
 
         self.pathIndex = 0
@@ -48,6 +48,8 @@ class Car:
 
         self.passRoute = [self.startNode]
         self.active = False
+
+        self.updatedPath = False
         
     def getSize(self):
         if self.active: return 5
@@ -79,6 +81,7 @@ class Car:
     def updatePath(self):
         self.path = self.city.find_shortest_path(self.currentNode, self.endNode)
         self.pathIndex = 0
+        self.updatedPath = True
 
     def move(self):
         dx, dy = self.vector
@@ -95,7 +98,8 @@ class Car:
         """
         # Pobranie wektora kierunku ruchu
         dx, dy = self.vector
-        self.existTime = time() - self.startTime
+        self.existTime = (time() - self.startTime) * con.timeMultiplier
+        self.updatedPath = False
 
         # Sprawdzanie odległości od innych samochodów
         if self.count <= 0:
@@ -143,12 +147,10 @@ class Car:
 
                 self.nextNode = self.path[self.pathIndex + 1]
                 road = self.city.getRoad((self.currentNode, self.nextNode))
-                if len(road.cars_on_road) != 0: 
-                    distance_to_last_car = ((road.cars_on_road[-1].x - road.start[0]) ** 2 + (road.cars_on_road[-1].y - road.start[1]) ** 2) ** 0.5
-                if len(road.cars_on_road) == 0 or distance_to_last_car > 5:
+                if road.isSpace():
                     self.removeFromRoad()
                     self.passRoute.append(self.currentNode)
-                    self.road = self.city.getRoad((self.currentNode, self.nextNode))
+                    self.road = road
                     self.addToRoad()
                 else:
                     self.speed = 0
