@@ -47,7 +47,7 @@ def createCar(city: City, start=None, end=None):
                     newCar.road.traffic += 1
                     city.totalTraffic += 1
                     city.lstOfCars.append(newCar)
-                    return 0
+                    return newCar
                 inFront = newCar.road.cars_on_road[-1]
                 distance_to_car = ((newCar.x - inFront.x) ** 2 + (newCar.y - inFront.y) ** 2) ** 0.5
                 if distance_to_car > 10:
@@ -55,7 +55,7 @@ def createCar(city: City, start=None, end=None):
                     newCar.road.traffic += 1
                     city.totalTraffic += 1
                     city.lstOfCars.append(newCar)
-                    return 0
+                    return newCar
         print("No space for car")
     print("City is full")
     return 1
@@ -295,7 +295,10 @@ def simulation(window, clock):
                         carThread.start()
 
                 if event.key == pg.K_TAB:
-                    createCar(c)
+                    unHighLight(c)
+                    car = createCar(c)
+                    if car != 1: highLightRoute(car)
+
 
                 if event.key == pg.K_c:
                     c.lstOfCars.clear()

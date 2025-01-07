@@ -158,5 +158,4 @@ class Car:
                 # Dotarliśmy do końca trasy
                 self.removeFromRoad()
                 self.currentNode = self.endNode
-                self.endTime = time()  # Rejestrujemy czas zakończenia
-                self.end = 1  # Oznaczamy, że dotarliśmy do celu
+                self.end = 1
