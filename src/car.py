@@ -27,8 +27,8 @@ class Car:
 
 
         self.currentNode = self.startNode
-        self.startTime = time()
-        self.existTime = (time() - self.startTime) * con.timeMultiplier
+        self.currentTime = time()
+        self.existTime = 0
         self.path = self.city.find_shortest_path(self.startNode, self.endNode)
 
         self.pathIndex = 0
@@ -43,7 +43,7 @@ class Car:
         self.y = self.road.start[1] + self.vector[1] * 10
         pos = (self.x, self.y)
 
-        self.speed = 10 * con.timeMultiplier
+        self.speed = 0.5 * con.timeMultiplier
         self.end = 0
 
         self.passRoute = [self.startNode]
@@ -60,12 +60,9 @@ class Car:
             return (255, 0, 255)
         else: return (51, 204, 255)
 
-    def reduceTraffic(self):
+    def removeFromRoad(self):
         for car in self.road.cars_on_road:
             car.count -= 1
-
-    def removeFromRoad(self):
-        self.reduceTraffic()
         self.road.traffic -= 1
         self.road.cars_on_road.pop(0)
 
@@ -89,7 +86,7 @@ class Car:
         self.y += dy * self.speed
 
     def timeUpdate(self, time):
-        self.startTime += time
+        self.existTime -= time 
 
     def update(self):
         """
@@ -98,7 +95,8 @@ class Car:
         """
         # Pobranie wektora kierunku ruchu
         dx, dy = self.vector
-        self.existTime = (time() - self.startTime) * con.timeMultiplier
+        self.existTime += (time() - self.currentTime) * con.timeMultiplier
+        self.currentTime = time()
         self.updatedPath = False
 
         # Sprawdzanie odległości od innych samochodów
@@ -127,7 +125,7 @@ class Car:
         dot_product = dx * direction_to_light[0] + dy * direction_to_light[1]
 
         # Jeśli jesteśmy blisko świateł i są czerwone, zatrzymujemy się
-        if dot_product > 0 and distance_to_light < 5 and self.count <= 5:
+        if dot_product > 0 and distance_to_light < 5 and self.count <= 3:
             if self.road.traffic_light.state == 'red':
                 self.speed = 0 # Czekamy na zielone światło
             elif self.road.traffic_light.state == 'green':

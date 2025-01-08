@@ -1,6 +1,5 @@
 from city_generator import City
 import pygame as pg
-import threading
 import config as con
 from car import Car
 from junction import Junction
@@ -58,6 +57,7 @@ def createCar(city: City, start=None, end=None):
                     city.lstOfCars.append(newCar)
                     return newCar
         print("No space for car")
+        return 1
     print("City is full")
     return 1
     # print(car.currentNode, car.endNode)
@@ -110,7 +110,7 @@ def checkIfClose(city: City, mouse_pos, window):
         if isMouseNearCar(mouse_pos, car):
             drawText(window, f'Car {car.id}', mouse_pos, (0, 0, 255))
             return car
-
+    
     for junction in city.junctions:
         if isMouseNearJunction(mouse_pos, junction):
             drawText(window, f'Junction {junction.id}', mouse_pos, (0, 0, 255))
@@ -155,16 +155,7 @@ def unHighLight(city: City):
     for car in city.lstOfCars:
         car.active = False
 
-def simUpdate(city: City):
-    #city update
-    for road in city.roads:
-        road.setColor()
-        city.update(road.id, road.trafficColor)
-
-    #light update
-    for junction in city.junctions:
-        junction.update_light()
-
+def carsUpdate(city: City):
     for car in city.lstOfCars:
         car.update()
         car.move()
@@ -176,19 +167,32 @@ def simUpdate(city: City):
             if car.active: unHighLight(city)
             city.lstOfCars.remove(car)
 
+def cityUpdate(city: City):
+    #city update
+    for road in city.roads:
+        road.setColor()
+        city.update(road.id, road.trafficColor)
+
+    #light update
+    for junction in city.junctions:
+        junction.update_light()
+
 def simulation(window, clock):
  
 
     c = City(con.netRows, con.netCols, con.seed)
     window = window
-    simulator = Task(c, simUpdate, 0.015625)
-    carSpawner = Task(c, createCar, 0.01)
+    simulator = Task(c, carsUpdate, 0.005)
+    cityUp = Task(c, cityUpdate, 0.2)
+
+    carSpawner = Task(c, createCar, 0.01 / con.timeMultiplier)
     clock = clock
     running = True
     activeSpawning = False
     simulationRunning = True
     stopTime = 0
     simulator.start()
+    cityUp.start()
 
     while running:
         drawCity(c, window)
@@ -207,6 +211,7 @@ def simulation(window, clock):
                         stopTime = time()
                         if activeSpawning: carSpawner.stop()
                         simulator.stop()
+                        cityUp.stop()
 
                     else:
                         simulationRunning = not simulationRunning
@@ -217,6 +222,7 @@ def simulation(window, clock):
                             junction.timeUpdate(time() - stopTime)
 
                         simulator.start()
+                        cityUp.start()
                         if activeSpawning: carSpawner.start()
                             
                 if event.key == pg.K_ESCAPE:
@@ -232,6 +238,7 @@ def simulation(window, clock):
                     running = False
                     activeSpawning = False
                     carSpawner.stop()
+                    cityUp.stop()
                     simulator.stop()
 
                 if event.key == pg.K_t:
@@ -264,6 +271,21 @@ def simulation(window, clock):
                     for road in c.roads:
                         print(road.id, road.totalTraffic)
 
+                if event.key == pg.K_1:
+                    con.timeMultiplier = 1
+                    
+                if event.key == pg.K_2:
+                    con.timeMultiplier = 2
+
+                if event.key == pg.K_3:
+                    con.timeMultiplier = 3
+                
+                if event.key == pg.K_4:
+                    con.timeMultiplier = 4
+                
+                if event.key == pg.K_5:
+                    con.timeMultiplier = 5
+
             if event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     object = checkIfClose(c, mouse_pos, window)
@@ -287,31 +309,3 @@ def simulation(window, clock):
 
         pg.display.flip()
         clock.tick(con.fps)
-    
-
-    # ####
-    # def get_color(value, min_value, max_value, start_color, end_color):
-    #     # Normalizacja wartości
-    #     normalized_value = (value - min_value) / (max_value - min_value)
-    #     normalized_value = max(0, min(1, normalized_value))  # Ograniczenie do zakresu [0, 1]
-        
-    #     # Interpolacja koloru
-    #     r = start_color[0] + (end_color[0] - start_color[0]) * normalized_value
-    #     g = start_color[1] + (end_color[1] - start_color[1]) * normalized_value
-    #     b = start_color[2] + (end_color[2] - start_color[2]) * normalized_value
-        
-    #     return (int(r), int(g), int(b))
-
-
-    # count = [road.totalTraffic for road in c.roads]
-    # minC = min(count)
-    # maxC = max(count)
-    # for road in c.roads:
-    #     normalizedCount = (road.totalTraffic - minC)/(maxC - minC)
-    #     road.trafficColor = get_color(normalizedCount, minC, maxC, (0, 255, 0), (255, 0, 0))
-
-    # while 1:
-    #     drawCity(c, window)
-    #     drawText(window, f'fps: {clock.get_fps():.1f}', (1700, 40), (255, 255, 255))
-    #     pg.display.flip()
-    #     clock.tick(con.fps)
