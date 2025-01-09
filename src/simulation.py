@@ -25,7 +25,7 @@ def drawCity(city: City, window):
         pg.draw.circle(window, (0, 0, 0), (car.x, car.y), car.getSize())
         pg.draw.circle(window, car.getColor(), (car.x, car.y), car.getSize() - 1)
         if car.active:
-            drawText(window, f'Car: {car.id} time: {car.existTime:.2f}', (1700, 120), (255, 255, 255))
+            drawText(window, f'Car: {car.id} time: {car.existTime:.2f}', (con.winWidth - 100, 120), (255, 255, 255))
 
 def drawFrame(city: City, window):
     x = [val[0] for val in city.scalePos.values()]
@@ -302,10 +302,10 @@ def simulation(window, clock):
             
             
         
-        drawText(window, f'fps: {clock.get_fps():.1f}', (1700, 40), (255, 255, 255))
-        drawText(window, f'cars: {len(c.lstOfCars)}', (1700, 60), (255, 255, 255))
-        drawText(window, f'Sim running: {simulationRunning}', (1700, 80), (255, 255, 255))
-        drawText(window, f'Car spawning: {activeSpawning}', (1700, 100), (255, 255, 255))
+        drawText(window, f'fps: {clock.get_fps():.1f}', (con.winWidth - 100, 40), (255, 255, 255))
+        drawText(window, f'cars: {len(c.lstOfCars)}', (con.winWidth - 100, 60), (255, 255, 255))
+        drawText(window, f'Sim running: {simulationRunning}', (con.winWidth - 100, 80), (255, 255, 255))
+        drawText(window, f'Car spawning: {activeSpawning}', (con.winWidth - 100, 100), (255, 255, 255))
 
         clock.tick(con.fps)
         pg.display.flip()

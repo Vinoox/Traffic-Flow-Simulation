@@ -11,6 +11,10 @@ if __name__ == "__main__":
     HWND = pg.display.get_wm_info()['window']
     SW_MAXIMIZE = 3
     ctypes.windll.user32.ShowWindow(HWND, SW_MAXIMIZE)
+    con.winWidth, con.winHeight = window.get_size()
+    con.winWidth -= 100
+    con.winHeight += 100
+
     pg.display.set_caption("Traffic Flow Simulation")
     clock = pg.time.Clock()
     clock.tick(con.fps)
