@@ -67,8 +67,8 @@ class Road:
         return dx, dy
     
     def isSpace(self):
-        if len(self.cars_on_road) == 0: return True
+        if self.traffic == 0: return True
         else:
             distance_to_last_car = ((self.cars_on_road[-1].x - self.start[0]) ** 2 + (self.cars_on_road[-1].y - self.start[1]) ** 2) ** 0.5
-            if distance_to_last_car > 5: return True
+            if distance_to_last_car > 15: return True
         return False

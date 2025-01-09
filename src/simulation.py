@@ -183,7 +183,7 @@ def simulation(window, clock):
     c = City(con.netRows, con.netCols, con.seed)
     window = window
     simulator = Task(c, carsUpdate, 0.005)
-    cityUp = Task(c, cityUpdate, 0.2)
+    cityUp = Task(c, cityUpdate, 0.5 / con.timeMultiplier)
 
     carSpawner = Task(c, createCar, 0.01 / con.timeMultiplier)
     clock = clock
@@ -216,10 +216,10 @@ def simulation(window, clock):
                     else:
                         simulationRunning = not simulationRunning
                         for car in c.lstOfCars:
-                            car.timeUpdate(time() - stopTime)
+                            car.stopTimeUpdate(time() - stopTime)
 
                         for junction in c.junctions:
-                            junction.timeUpdate(time() - stopTime)
+                            junction.stopTimeUpdate(time() - stopTime)
 
                         simulator.start()
                         cityUp.start()
@@ -307,5 +307,5 @@ def simulation(window, clock):
         drawText(window, f'Sim running: {simulationRunning}', (1700, 80), (255, 255, 255))
         drawText(window, f'Car spawning: {activeSpawning}', (1700, 100), (255, 255, 255))
 
-        pg.display.flip()
         clock.tick(con.fps)
+        pg.display.flip()

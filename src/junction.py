@@ -38,5 +38,5 @@ class Junction():
             self.roadsTo[self.counter].traffic_light.state = 'green'
             self.time = time()
 
-    def timeUpdate(self, time):
+    def stopTimeUpdate(self, time):
         self.time += time

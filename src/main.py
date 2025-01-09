@@ -17,6 +17,7 @@ if __name__ == "__main__":
 
 
     #start window
+    
     city = simulation(window, clock)
     
     #end window

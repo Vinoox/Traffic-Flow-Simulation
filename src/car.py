@@ -85,37 +85,22 @@ class Car:
         self.x += dx * self.speed
         self.y += dy * self.speed
 
-    def timeUpdate(self, time):
+    def stopTimeUpdate(self, time):
         self.existTime -= time 
 
-    def update(self):
-        """
-        Ruch samochodu z uwzględnieniem innych samochodów na tej samej drodze
-        oraz sygnalizacji świetlnej.
-        """
-        # Pobranie wektora kierunku ruchu
-        dx, dy = self.vector
+    def timeUpdate(self):
         self.existTime += (time() - self.currentTime) * con.timeMultiplier
         self.currentTime = time()
-        self.updatedPath = False
 
-        # Sprawdzanie odległości od innych samochodów
-        if self.count <= 0:
-            self.speed = 0.5 * con.timeMultiplier
-        else:
-            nextCar = self.road.cars_on_road[self.count - 1]
-            distance_to_car = ((self.x - nextCar.x) ** 2 + (self.y - nextCar.y) ** 2) ** 0.5
-            # Zatrzymujemy się tylko wtedy, gdy odległość jest bardzo mała
-            # i inne auto blokuje drogę
-            if distance_to_car < 7:
-                if (nextCar.x - self.x) * dx + (nextCar.y - self.y) * dy > 0:
-                    self.speed = 0  # Zatrzymujemy się, czekamy, aż będzie miejsce
-                    return
-                else:
-                    self.speed = 0.5 * con.timeMultiplier
-            else:
-                self.speed = 0.5 * con.timeMultiplier
+    def checkCarDistance(self):
+        dx, dy = self.vector
+        nextCar = self.road.cars_on_road[self.count - 1]
+        if (nextCar.x - self.x) * dx + (nextCar.y - self.y) * dy < 7:
+            return 0
+        return 0.5 * con.timeMultiplier
 
+    def checkLightDistance(self):
+        dx, dy = self.vector
         # Obliczanie odległości do świateł (pozycja świateł)
         light_pos = self.road.traffic_light.position
         distance_to_light = ((self.x - light_pos[0]) ** 2 + (self.y - light_pos[1]) ** 2) ** 0.5
@@ -127,15 +112,14 @@ class Car:
         # Jeśli jesteśmy blisko świateł i są czerwone, zatrzymujemy się
         if dot_product > 0 and distance_to_light < 5 and self.count <= 3:
             if self.road.traffic_light.state == 'red':
-                self.speed = 0 # Czekamy na zielone światło
+                return 0
             elif self.road.traffic_light.state == 'green':
-                # Możemy ruszyć, jeśli światło jest zielone i jesteśmy blisko
-                self.speed = 0.5 * con.timeMultiplier
+                return 0.5 * con.timeMultiplier
+        return  0.5 * con.timeMultiplier
 
-
-
+    def moveToNextNode(self):
         # Sprawdzenie, czy dotarliśmy do kolejnego węzła
-        if abs(self.x - self.road.end[0]) < self.speed and abs(self.y - self.road.end[1]) < 10 and self.count <= 0:
+        if not self.changed or (abs(self.x - self.road.end[0]) < self.speed and abs(self.y - self.road.end[1]) < 10):
             if self.changed:
                 self.pathIndex += 1; self.changed = False
 
@@ -157,3 +141,17 @@ class Car:
                 self.removeFromRoad()
                 self.currentNode = self.endNode
                 self.end = 1
+
+    def update(self):
+        self.timeUpdate()
+        self.updatedPath = False
+
+        
+        if self.count > 0:
+            self.speed = self.checkCarDistance()
+            if self.speed == 0: return
+
+        if self.count <= 3:
+            self.speed = self.checkLightDistance()
+
+        self.moveToNextNode()
