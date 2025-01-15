@@ -1,8 +1,8 @@
 seed = 1234
 
 #window parameter
-winWidth = 1800
-winHeight = 1000
+winWidth = 1400
+winHeight = 900
 margin = 100
 fps = 1000
 
