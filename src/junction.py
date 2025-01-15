@@ -5,7 +5,7 @@ import random
 color = {'white' : (255, 255, 255),
          'blue': (0, 0, 255)}
 
-class Junction():
+class Junction:
     def __init__(self, id: tuple, pos: tuple):
         self.id = id
         self.x = pos[0]
@@ -16,14 +16,19 @@ class Junction():
         self.initial = True
         self.counter = 0
 
-        #high light
         self.active = False
         self.start = False
         self.end = False
 
+        self.totalStopTime = 0
+        self.carsPassed = 0
+
+        self.waiting_cars = []
+
     def getColor(self):
-        if self.active: return color['blue']
-        return color['white']
+        if self.active:
+            return (0, 0, 255)  # Blue if active
+        return (255, 255, 255)  # White otherwise
 
     def pos(self):
         return (self.x, self.y)
@@ -38,5 +43,20 @@ class Junction():
             self.roadsTo[self.counter].traffic_light.state = 'green'
             self.time = time()
 
-    def stopTimeUpdate(self, time):
-        self.time += time
+
+    def addCarWaitTime(self, car):
+        self.waiting_cars.append(car)
+        car.stopTimeStart = time() 
+        avg_wait_time = self.calcAverageStopTime()
+        
+    def removeCarWaitTime(self, car):
+        if car in self.waiting_cars:
+            car.pauseTime = time() - car.stopTimeStart
+            self.totalStopTime += car.pauseTime
+            self.carsPassed += 1
+            self.waiting_cars.remove(car)
+
+    def calcAverageStopTime(self):
+        if self.carsPassed == 0:
+            return 0 
+        return self.totalStopTime / self.carsPassed 

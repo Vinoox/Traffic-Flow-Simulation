@@ -3,14 +3,15 @@ import pygame as pg
 import config as con
 from car import Car
 from junction import Junction
-from backgournd_task import Task
+from background_task import Task
 from time import time
+
 
 def drawCity(city: City, window):
     window.fill((0, 0, 0))
     drawFrame(city, window)
 
-    for road in city.roads:            
+    for road in city.roads:
         pg.draw.aaline(window, road.getColor(), road.start, road.end, 0)
 
     for junction in city.junctions:
@@ -25,7 +26,8 @@ def drawCity(city: City, window):
         pg.draw.circle(window, (0, 0, 0), (car.x, car.y), car.getSize())
         pg.draw.circle(window, car.getColor(), (car.x, car.y), car.getSize() - 1)
         if car.active:
-            drawText(window, f'Car: {car.id} time: {car.existTime:.2f}', (1700, 120), (255, 255, 255))
+            drawText(window, f'Car: {car.id} time: {car.existTime:.2f}', (con.winWidth - 100, 120), (255, 255, 255))
+            drawText(window, f'Stop time: {car.pauseTime:.2f}', (con.winWidth - 100, 140), (255, 255, 255))
 
 def drawFrame(city: City, window):
     x = [val[0] for val in city.scalePos.values()]
@@ -34,6 +36,7 @@ def drawFrame(city: City, window):
     minY, maxY = min(y) - 15, max(y) + 15
 
     pg.draw.rect(window, (255, 255, 255), (minX, minY, maxX - minX, maxY - minY), 3)
+
 
 def createCar(city: City, start=None, end=None):
     if city.carsOnRoad < city.capacity // 5:
@@ -60,7 +63,8 @@ def createCar(city: City, start=None, end=None):
         return 1
     print("City is full")
     return 1
-    # print(car.currentNode, car.endNode)
+
+
 
 def isMouseNearRoad(mouse_pos, road, tolerance=3):
     x1, y1 = road.start
@@ -94,26 +98,32 @@ def isMouseNearRoad(mouse_pos, road, tolerance=3):
 
     return distance <= tolerance
 
+
 def isMouseNearJunction(mouse_pos, junction, tolerance=10):
     x, y = junction.pos()
     distance = ((x - mouse_pos[0]) ** 2 + (y - mouse_pos[1]) ** 2) ** 0.5
 
     return distance <= tolerance
 
+
 def isMouseNearCar(mouse_pos, car, tolerance=5):
     distance = ((car.x - mouse_pos[0]) ** 2 + (car.y - mouse_pos[1]) ** 2) ** 0.5
 
     return distance <= tolerance
+
 
 def checkIfClose(city: City, mouse_pos, window):
     for car in city.lstOfCars:
         if isMouseNearCar(mouse_pos, car):
             drawText(window, f'Car {car.id}', mouse_pos, (0, 0, 255))
             return car
-    
+
     for junction in city.junctions:
         if isMouseNearJunction(mouse_pos, junction):
+            avg_stop_time = junction.calcAverageStopTime()
             drawText(window, f'Junction {junction.id}', mouse_pos, (0, 0, 255))
+            drawText(window, f'Avg Wait: {avg_stop_time:.2f}s',(mouse_pos[0], mouse_pos[1] + 15),
+                     (0, 0, 255), 30)
             return junction
 
     for road in city.roads:
@@ -122,10 +132,12 @@ def checkIfClose(city: City, mouse_pos, window):
             return road
     return 0
 
+
 def drawText(window, text, position, color=(255, 255, 255), size=30):
     font = pg.font.Font(None, size)
     label = font.render(text, True, color)
     window.blit(label, position)
+
 
 def highLightRoute(car: Car):
     car.active = True
@@ -143,6 +155,7 @@ def highLightRoute(car: Car):
     for x in range(len(car.path) - 1):
         car.city.getRoad((car.path[x], car.path[x + 1])).active = True
 
+
 def unHighLight(city: City):
     for junction in city.junctions:
         junction.active = False
@@ -155,11 +168,12 @@ def unHighLight(city: City):
     for car in city.lstOfCars:
         car.active = False
 
+
 def carsUpdate(city: City):
     for car in city.lstOfCars:
         car.update()
         car.move()
-        if car.active and car.updatedPath: 
+        if car.active and car.updatedPath:
             unHighLight(city)
             highLightRoute(car)
 
@@ -167,19 +181,19 @@ def carsUpdate(city: City):
             if car.active: unHighLight(city)
             city.lstOfCars.remove(car)
 
+
 def cityUpdate(city: City):
-    #city update
+    # city update
     for road in city.roads:
         road.setColor()
         city.update(road.id, road.trafficColor)
 
-    #light update
+    # light update
     for junction in city.junctions:
         junction.update_light()
 
-def simulation(window, clock):
- 
 
+def simulation(window, clock):
     c = City(con.netRows, con.netCols, con.seed)
     window = window
     simulator = Task(c, carsUpdate, 0.005)
@@ -217,14 +231,12 @@ def simulation(window, clock):
                         simulationRunning = not simulationRunning
                         for car in c.lstOfCars:
                             car.stopTimeUpdate(time() - stopTime)
-
-                        for junction in c.junctions:
-                            junction.stopTimeUpdate(time() - stopTime)
-
+                            car.waitingTimeUpdate(time() - stopTime)
+                      
                         simulator.start()
                         cityUp.start()
                         if activeSpawning: carSpawner.start()
-                            
+
                 if event.key == pg.K_ESCAPE:
                     if not activeSpawning:
                         activeSpawning = True
@@ -273,16 +285,16 @@ def simulation(window, clock):
 
                 if event.key == pg.K_1:
                     con.timeMultiplier = 1
-                    
+
                 if event.key == pg.K_2:
                     con.timeMultiplier = 2
 
                 if event.key == pg.K_3:
                     con.timeMultiplier = 3
-                
+
                 if event.key == pg.K_4:
                     con.timeMultiplier = 4
-                
+
                 if event.key == pg.K_5:
                     con.timeMultiplier = 5
 
@@ -294,18 +306,13 @@ def simulation(window, clock):
                         highLightRoute(object)
                     elif type(object) == Junction:
                         unHighLight(c)
-                        for car in c.lstOfCars:
-                            if car.endNode == object.id:
-                                car.active = True
                     else:
                         unHighLight(c)
-            
-            
-        
-        drawText(window, f'fps: {clock.get_fps():.1f}', (1700, 40), (255, 255, 255))
-        drawText(window, f'cars: {len(c.lstOfCars)}', (1700, 60), (255, 255, 255))
-        drawText(window, f'Sim running: {simulationRunning}', (1700, 80), (255, 255, 255))
-        drawText(window, f'Car spawning: {activeSpawning}', (1700, 100), (255, 255, 255))
+
+        drawText(window, f'fps: {clock.get_fps():.1f}', (con.winWidth - 100, 40), (255, 255, 255))
+        drawText(window, f'cars: {len(c.lstOfCars)}', (con.winWidth - 100, 60), (255, 255, 255))
+        drawText(window, f'Sim running: {simulationRunning}', (con.winWidth - 100, 80), (255, 255, 255))
+        drawText(window, f'Car spawning: {activeSpawning}', (con.winWidth - 100, 100), (255, 255, 255))
 
         clock.tick(con.fps)
         pg.display.flip()

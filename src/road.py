@@ -17,8 +17,6 @@ class Road:
         self.maxSize = self.lenght() // 3
         self.trafficColor = 'green'
         self.cars_on_road = []
-
-        # Tworzenie światła na podstawie pozycji drogi
         self.traffic_light = TrafficLight(self.end, self.vector)
 
         self.active = False
@@ -45,13 +43,6 @@ class Road:
 
         return length
 
-    def update_light(self):
-        """
-        Aktualizuje stan sygnalizacji świetlnej na drodze.
-        """
-        if self.traffic_light:
-            self.traffic_light.update()
-
     def getVector(self):
         """
         Oblicza znormalizowany wektor ruchu od start do end.
@@ -70,5 +61,5 @@ class Road:
         if self.traffic == 0: return True
         else:
             distance_to_last_car = ((self.cars_on_road[-1].x - self.start[0]) ** 2 + (self.cars_on_road[-1].y - self.start[1]) ** 2) ** 0.5
-            if distance_to_last_car > 15: return True
+            if distance_to_last_car > 5: return True
         return False

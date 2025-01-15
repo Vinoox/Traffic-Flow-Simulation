@@ -7,16 +7,9 @@ import config as con
 
 class TrafficLight:
     def __init__(self, pos: tuple, vector: tuple):
-        """
-        Tworzy obiekt świateł drogowych.
-
-        :param start_pos: Początkowa pozycja drogi (x, y).
-        :param end_pos: Końcowa pozycja drogi (x, y).
-        :param offset: Odległość przesunięcia świateł od węzła (teraz możemy to pominąć).
-        :param initial_state: Początkowy stan ('green' lub 'red').
-        :param cycle_duration: Długość cyklu świateł w klatkach.
-        """
-        # Ustalanie pozycji świateł na środku drogi
         self.position = tuple(np.subtract(pos, np.multiply(vector, 12)))
         self.state = 'red'  # 'green' lub 'red'
         self.cycle_duration = 10 / con.timeMultiplier
+
+    def updateLight(self, time):
+        self.cycle_duration = time / con.timeMultiplier
