@@ -56,6 +56,8 @@ class Car:
         self.pauseTime = 0
         self.updatedPath = False
 
+        self.waitTime = 0
+
     def getSize(self):
         if self.active:
             return 5
@@ -102,27 +104,29 @@ class Car:
 
     def timeUpdate(self):
         self.existTime += (time() - self.currentTime) * con.timeMultiplier
+        if self.speed == 0: 
+            self.waitTime += (time() - self.currentTime) * con.timeMultiplier
         self.currentTime = time()
 
     def pausetimeUpdate(self):
         if self.speed == 0:
             self.pauseTime += (time() - self.currentstopTime) * con.timeMultiplier
-            if self.junctionWaiting:
-                self.junctionWaiting.carsWaiting.append(self)
+            # if self.junctionWaiting:
+            #     self.junctionWaiting.carsWaiting.append(self)
         self.currentstopTime = time()
 
-    def waitingTime(self):
-        if self.speed == 0:
-            self.pauseTime += (time() - self.currentTime) * con.timeMultiplier
-        self.currentwaitTime = time()
+    # def waitingTime(self):
+    #     if self.speed == 0:
+    #         self.pauseTime += (time() - self.currentTime) * con.timeMultiplier
+    #     self.currentwaitTime = time()
 
-    def waitingTimeUpdate(self, time2):
-        self.pauseTime -= time2
+    # def waitingTimeUpdate(self, time2):
+    #     self.pauseTime -= time2
 
-    def removeFromJunctionWaitingList(self):
-        if self.junctionWaiting:
-            self.junctionWaiting.carsWaiting.remove(self)
-            self.junctionWaiting = None
+    # def removeFromJunctionWaitingList(self):
+    #     if self.junctionWaiting:
+    #         self.junctionWaiting.carsWaiting.remove(self)
+    #         self.junctionWaiting = None
 
     def distance(self, pos1: tuple, pos2: tuple):
         return ((pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1])**2) ** 0.5
@@ -137,17 +141,17 @@ class Car:
 
     def update(self):
         self.timeUpdate()
-        self.waitingTime()
+        # self.waitingTime()
 
-        junction = self.city.getJunction(self.nextNode)
-        if self.road.traffic_light.state == 'red':
-            if self not in junction.waiting_cars:
-                junction.addCarWaitTime(self)
+        # junction = self.city.getJunction(self.nextNode)
+        # if self.road.traffic_light.state == 'red':
+        #     if self not in junction.waiting_cars:
+        #         junction.addCarWaitTime(self)
 
-        if self.road.traffic_light.state == 'green':
-            if self in junction.waiting_cars:
-                junction.removeCarWaitTime(self)
-                self.stopTime = self.stopTimeStart
+        # if self.road.traffic_light.state == 'green':
+        #     if self in junction.waiting_cars:
+        #         junction.removeCarWaitTime(self)
+        #         self.stopTime = self.stopTimeStart
 
 
         distanceToLight = self.distanceToLight()
@@ -179,8 +183,6 @@ class Car:
                 self.speed = 0
                 return
 
-
-
         if abs(self.x - self.road.end[0]) < self.speed and abs(self.y - self.road.end[1]) < 10:
             if self.changed:
                 self.pathIndex += 1
@@ -193,6 +195,9 @@ class Car:
                 if len(road.cars_on_road) == 0 or self.distance(road.cars_on_road[-1].pos, road.start) > 3:
                     self.removeFromRoad()
                     self.road = self.city.getRoad((self.currentNode, self.nextNode))
+                    self.city.getJunction(self.currentNode).totalStopTime += self.waitTime
+                    self.waitTime = 0
+                    self.city.getJunction(self.currentNode).carsPassed += 1
                     self.addToRoad()
                 else:
                     self.speed = 0

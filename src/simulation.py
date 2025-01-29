@@ -37,7 +37,7 @@ def drawFrame(city: City, window):
 
     pg.draw.rect(window, (255, 255, 255), (minX, minY, maxX - minX, maxY - minY), 3)
 
-def createCar(city: City, start=None, end=None, amountOfCars = 2000):
+def createCar(city: City, start=None, end=None, amountOfCars = 1000):
     if city.totalTraffic < amountOfCars:
         n = 0
         while n < 5:
@@ -60,7 +60,7 @@ def createCar(city: City, start=None, end=None, amountOfCars = 2000):
                     return newCar
         print("No space for car")
         return 1
-    print("City is full")
+    # print("City is full")
     return 1
 
 def isMouseNearRoad(mouse_pos, road, tolerance=3):
@@ -310,8 +310,15 @@ def simulation(window, clock):
         drawText(window, f'Car spawning: {activeSpawning}', (con.winWidth - 100, 100), (255, 255, 255))
 
         if len(c.lstOfCars)  == 0 and c.totalTraffic != 0:
+            lst = []
+            id = []
             for junction in c.junctions:
-                print(f'{junction.id}: {junction.calcAverageStopTime()}')
+                id.append(str(junction.id))
+                # print(f'id: {junction.id}; avg wait time: {junction.calcAverageStopTime()}; total cars passed: {junction.carsPassed}')
+                lst.append(junction.calcAverageStopTime())
+            print(lst)
+            print(id)
+            
             running = False
 
         clock.tick(con.fps)

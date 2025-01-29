@@ -1,6 +1,5 @@
 from time import time
 import config as con
-import random
 
 color = {'white' : (255, 255, 255),
          'blue': (0, 0, 255)}
@@ -23,7 +22,7 @@ class Junction:
         self.totalStopTime = 0
         self.carsPassed = 0
 
-        self.waiting_cars = []
+        # self.waiting_cars = []
 
     def getColor(self):
         if self.active:
@@ -39,7 +38,7 @@ class Junction:
                 cycleDuration = self.roadsTo[self.counter].traffic_light.cycle_duration * 1.5
             elif self.roadsTo[self.counter].trafficColor == "red":
                 cycleDuration = self.roadsTo[self.counter].traffic_light.cycle_duration * 2
-            else: cycleDuration = self.roadsTo[self.counter].traffic_light.cycle_duration
+            else: cycleDuration = self.roadsTo[self.counter].traffic_light.cycle_duration / 3
         else: cycleDuration = self.roadsTo[self.counter].traffic_light.cycle_duration
 
         if self.initial:
@@ -51,17 +50,17 @@ class Junction:
             self.roadsTo[self.counter].traffic_light.state = 'green'
             self.time = time()
 
-    def addCarWaitTime(self, car):
-        self.waiting_cars.append(car)
-        car.stopTimeStart = time() 
-        avg_wait_time = self.calcAverageStopTime()
+    # def addCarWaitTime(self, car):
+    #     self.waiting_cars.append(car)
+    #     car.stopTimeStart = time() 
+    #     avg_wait_time = self.calcAverageStopTime()
         
-    def removeCarWaitTime(self, car):
-        if car in self.waiting_cars:
-            car.pauseTime = time() - car.stopTimeStart
-            self.totalStopTime += car.pauseTime
-            self.carsPassed += 1
-            self.waiting_cars.remove(car)
+    # def removeCarWaitTime(self, car):
+    #     if car in self.waiting_cars:
+    #         car.pauseTime = time() - car.stopTimeStart
+    #         self.totalStopTime += car.pauseTime
+    #         self.carsPassed += 1
+    #         self.waiting_cars.remove(car)
 
     def calcAverageStopTime(self):
         if self.carsPassed == 0:
