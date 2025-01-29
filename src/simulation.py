@@ -16,8 +16,8 @@ def drawCity(city: City, window):
 
     for junction in city.junctions:
         pg.draw.circle(window, junction.getColor(), (junction.x, junction.y), 10)
-        if junction.start: drawText(window, 'S', (junction.pos()[0] - 5, junction.pos()[1] - 5), (255, 255, 255), 20)
-        if junction.end: drawText(window, 'E', (junction.pos()[0] - 5, junction.pos()[1] - 5), (255, 255, 255), 20)
+        if junction.start: drawText(window, 'S', (junction.pos()[0] - 5, junction.pos()[1] - 5), (0, 0, 0), 20)
+        if junction.end: drawText(window, 'E', (junction.pos()[0] - 5, junction.pos()[1] - 5), (0, 0, 0), 20)
 
     for road in city.roads:
         pg.draw.circle(window, road.traffic_light.state, road.traffic_light.position, 5)
@@ -37,9 +37,8 @@ def drawFrame(city: City, window):
 
     pg.draw.rect(window, (255, 255, 255), (minX, minY, maxX - minX, maxY - minY), 3)
 
-
-def createCar(city: City, start=None, end=None):
-    if city.carsOnRoad < city.capacity // 5:
+def createCar(city: City, start=None, end=None, amountOfCars = 2000):
+    if city.totalTraffic < amountOfCars:
         n = 0
         while n < 5:
             n += 1
@@ -63,8 +62,6 @@ def createCar(city: City, start=None, end=None):
         return 1
     print("City is full")
     return 1
-
-
 
 def isMouseNearRoad(mouse_pos, road, tolerance=3):
     x1, y1 = road.start
@@ -98,19 +95,16 @@ def isMouseNearRoad(mouse_pos, road, tolerance=3):
 
     return distance <= tolerance
 
-
 def isMouseNearJunction(mouse_pos, junction, tolerance=10):
     x, y = junction.pos()
     distance = ((x - mouse_pos[0]) ** 2 + (y - mouse_pos[1]) ** 2) ** 0.5
 
     return distance <= tolerance
 
-
 def isMouseNearCar(mouse_pos, car, tolerance=5):
     distance = ((car.x - mouse_pos[0]) ** 2 + (car.y - mouse_pos[1]) ** 2) ** 0.5
 
     return distance <= tolerance
-
 
 def checkIfClose(city: City, mouse_pos, window):
     for car in city.lstOfCars:
@@ -132,7 +126,6 @@ def checkIfClose(city: City, mouse_pos, window):
             return road
     return 0
 
-
 def drawText(window, text, position, color=(255, 255, 255), size=30):
     font = pg.font.Font(None, size)
     label = font.render(text, True, color)
@@ -142,11 +135,9 @@ def drawText(window, text, position, color=(255, 255, 255), size=30):
 def highLightRoute(car: Car):
     car.active = True
     startJunction = car.city.getJunction(car.startNode)
-    startJunction.active = True
     startJunction.start = True
 
     endJunction = car.city.getJunction(car.endNode)
-    endJunction.active = True
     endJunction.end = True
 
     for x in range(len(car.passRoute) - 1):
@@ -158,7 +149,7 @@ def highLightRoute(car: Car):
 
 def unHighLight(city: City):
     for junction in city.junctions:
-        junction.active = False
+        # junction.active = False
         junction.start = False
         junction.end = False
 
@@ -275,6 +266,10 @@ def simulation(window, clock):
                     for road in c.roads:
                         road.traffic_light.state = 'red'
 
+                if event.key == pg.K_a:
+                    for junction in c.junctions:
+                        junction.active = not junction.active
+
                 if event.key == pg.K_g:
                     for road in c.roads:
                         road.traffic_light.state = 'green'
@@ -305,7 +300,7 @@ def simulation(window, clock):
                         unHighLight(c)
                         highLightRoute(object)
                     elif type(object) == Junction:
-                        unHighLight(c)
+                        object.active = not object.active
                     else:
                         unHighLight(c)
 
@@ -313,6 +308,11 @@ def simulation(window, clock):
         drawText(window, f'cars: {len(c.lstOfCars)}', (con.winWidth - 100, 60), (255, 255, 255))
         drawText(window, f'Sim running: {simulationRunning}', (con.winWidth - 100, 80), (255, 255, 255))
         drawText(window, f'Car spawning: {activeSpawning}', (con.winWidth - 100, 100), (255, 255, 255))
+
+        if len(c.lstOfCars)  == 0 and c.totalTraffic != 0:
+            for junction in c.junctions:
+                print(f'{junction.id}: {junction.calcAverageStopTime()}')
+            running = False
 
         clock.tick(con.fps)
         pg.display.flip()

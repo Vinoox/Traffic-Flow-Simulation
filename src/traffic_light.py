@@ -6,10 +6,10 @@ import numpy as np
 import config as con
 
 class TrafficLight:
-    def __init__(self, pos: tuple, vector: tuple):
+    def __init__(self, pos: tuple, vector: tuple, duration: int):
         self.position = tuple(np.subtract(pos, np.multiply(vector, 12)))
         self.state = 'red'  # 'green' lub 'red'
-        self.cycle_duration = 10 / con.timeMultiplier
+        self.cycle_duration = duration
 
-    def updateLight(self, time):
-        self.cycle_duration = time / con.timeMultiplier
+    # def updateLight(self, time):
+    #     self.cycle_duration = time / con.timeMultiplier

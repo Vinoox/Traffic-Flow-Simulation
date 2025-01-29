@@ -27,22 +27,29 @@ class Junction:
 
     def getColor(self):
         if self.active:
-            return (0, 0, 255)  # Blue if active
+            return (255, 255, 0)  # Blue if active
         return (255, 255, 255)  # White otherwise
 
     def pos(self):
         return (self.x, self.y)
 
     def update_light(self):
+        if self.active:
+            if self.roadsTo[self.counter].trafficColor == "orange":
+                cycleDuration = self.roadsTo[self.counter].traffic_light.cycle_duration * 1.5
+            elif self.roadsTo[self.counter].trafficColor == "red":
+                cycleDuration = self.roadsTo[self.counter].traffic_light.cycle_duration * 2
+            else: cycleDuration = self.roadsTo[self.counter].traffic_light.cycle_duration
+        else: cycleDuration = self.roadsTo[self.counter].traffic_light.cycle_duration
+
         if self.initial:
             self.roadsTo[self.counter].traffic_light.state = 'green'
             self.initial = False
-        if time() - self.time > self.roadsTo[self.counter].traffic_light.cycle_duration / con.timeMultiplier:
+        if time() - self.time > cycleDuration / con.timeMultiplier:
             self.roadsTo[self.counter].traffic_light.state = 'red'
             self.counter = 0 if self.counter == len(self.roadsTo) - 1 else self.counter + 1
             self.roadsTo[self.counter].traffic_light.state = 'green'
             self.time = time()
-
 
     def addCarWaitTime(self, car):
         self.waiting_cars.append(car)

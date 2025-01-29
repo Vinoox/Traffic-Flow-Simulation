@@ -17,7 +17,7 @@ class Road:
         self.maxSize = self.lenght() // 3
         self.trafficColor = 'green'
         self.cars_on_road = []
-        self.traffic_light = TrafficLight(self.end, self.vector)
+        self.traffic_light = TrafficLight(self.end, self.vector, self.maxSize // 4)
 
         self.active = False
 

@@ -56,7 +56,6 @@ class Car:
         self.pauseTime = 0
         self.updatedPath = False
 
-
     def getSize(self):
         if self.active:
             return 5
@@ -135,7 +134,6 @@ class Car:
     def distanceToNextCar(self):
         nextCarPos = self.road.cars_on_road[self.count - 1].pos
         return self.distance(self.pos, nextCarPos)
-
 
     def update(self):
         self.timeUpdate()

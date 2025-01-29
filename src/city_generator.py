@@ -7,10 +7,6 @@ import random
 
 class City:
     def __init__(self, rows: int, cols: int, seed=None):
-        """
-        Inicjalizacja miasta: tworzenie grafu 2D o zadanej liczbie wierszy i kolumn
-        oraz generowanie pozycji dla węzłów.
-        """
         self.rows = rows
         self.cols = cols
         self.seed = seed
@@ -23,7 +19,7 @@ class City:
         # generowanie modelu miasta
         self.G = nx.grid_2d_graph(rows, cols)
         self.pos = self.randomize_node_positions()
-        self.add_edge_weights()  # Dodawanie wag na podstawie odległości euklidesowej
+        self.add_edge_weights()
 
         # generowanie przeskalowanych pozycji do wyświetlania
         self.scalePos = self.generate_scale_position()
@@ -63,7 +59,6 @@ class City:
         x = (pos[0] - self.minX) / (self.maxX - self.minX)
         y = (pos[1] - self.minY) / (self.maxY - self.minY)
 
-        # Przekształcenie na piksele (odwrócenie osi, jeśli trzeba):
         x_pixel = int(x * (con.winWidth - 2 * con.margin) + con.margin / 2)
         y_pixel = int((1 - y) * (con.winHeight - 2 * con.margin) + con.margin/4)  # Odwrócenie Y
 
@@ -81,17 +76,14 @@ class City:
             startId, endId = edge[0], edge[1]
             start, end = self.scalePos[edge[0]], self.scalePos[edge[1]]
 
-            # Obliczanie wektora drogi
             dx, dy = end[0] - start[0], end[1] - start[1]
 
-            # Obliczanie wektora prostopadłego i normalizacja
             length = (dx ** 2 + dy ** 2) ** 0.5
 
-            offset = 3  # Przesunięcie linii w pikselach
+            offset = 3
 
             perp_dx, perp_dy = -dy / length * offset, dx / length * offset
 
-            # Przesunięte punkty
             start1 = (int(start[0] + perp_dx), int(start[1] + perp_dy))
             end1 = (int(end[0] + perp_dx), int(end[1] + perp_dy))
             start2 = (int(start[0] - perp_dx), int(start[1] - perp_dy))
@@ -102,46 +94,32 @@ class City:
         return edges
 
     def randomize_node_positions(self):
-        """
-        Generowanie losowych pozycji dla każdego węzła w grafie.
-        Pozycje są losowane wokół siatki.
-        """
         return {(x, y): (y + random.uniform(-0.4, 0.4), -x + random.uniform(-0.4, 0.4))
                 for x, y in self.G.nodes()}
 
     def add_edge_weights(self):
-        """
-        Dodawanie wag na podstawie odległości euklidesowej między węzłami.
-        """
         for u, v in self.G.edges():
             x1, y1 = self.pos[u]
             x2, y2 = self.pos[v]
-            distance = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5  # Odległość euklidesowa
+            distance = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
             self.G[u][v]['weight'] = distance
 
     def update(self, id, color):
         self.carsOnRoad = len(self.lstOfCars)
         x1, y1 = id[0]
         x2, y2 = id[1]
-        distance = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5  # Odległość euklidesowa
+        distance = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
         if color == 'green': self.G[id[0]][id[1]]['weight'] = distance
         elif color == 'orange': self.G[id[0]][id[1]]['weight'] = distance * 2
         else: self.G[id[0]][id[1]]['weight'] = distance * 3
 
     def find_shortest_path(self, source, target):
-        """
-        Znajdowanie najkrótszej ścieżki w grafie z uwzględnieniem wag (algorytm Dijkstry).
-        """
         shortest_path = nx.dijkstra_path(self.G, source=source, target=target, weight='weight')
         return shortest_path
 
     def draw(self, shortest_path=None):
-        """
-        Rysowanie grafu z możliwością wyróżnienia najkrótszej ścieżki.
-        """
         plt.figure(figsize=(8, 8))
 
-        # Rysowanie grafu
         nx.draw(
             self.G,
             self.pos,
@@ -153,7 +131,6 @@ class City:
             font_size=10,
         )
 
-        # Jeśli podano, wyróżnienie najkrótszej ścieżki na grafie
         if shortest_path:
             path_edges = list(zip(shortest_path[:-1], shortest_path[1:]))
             nx.draw_networkx_edges(self.G, self.pos, edgelist=path_edges, edge_color="red", width=2)

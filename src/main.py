@@ -20,11 +20,8 @@ if __name__ == "__main__":
     clock.tick(con.fps)
 
 
-    #start window
-    
+    #simulation
     city = simulation(window, clock)
-    
-    #end window
     
     
     pg.quit()
