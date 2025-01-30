@@ -26,8 +26,8 @@ def drawCity(city: City, window):
         pg.draw.circle(window, (0, 0, 0), (car.x, car.y), car.getSize())
         pg.draw.circle(window, car.getColor(), (car.x, car.y), car.getSize() - 1)
         if car.active:
-            drawText(window, f'Car: {car.id} time: {car.existTime:.2f}', (con.winWidth - 100, 120), (255, 255, 255))
-            drawText(window, f'Stop time: {car.pauseTime:.2f}', (con.winWidth - 100, 140), (255, 255, 255))
+            drawText(window, f'Car: {car.id} time: {car.existTime:.2f}', (con.winWidth - 100, 160), (255, 255, 255))
+            drawText(window, f'Stop time: {car.totalWaitTime:.2f}', (con.winWidth - 100, 180), (255, 255, 255))
 
 def drawFrame(city: City, window):
     x = [val[0] for val in city.scalePos.values()]
@@ -40,7 +40,7 @@ def drawFrame(city: City, window):
 def createCar(city: City, start=None, end=None, amountOfCars = 1000):
     if city.totalTraffic < amountOfCars:
         n = 0
-        while n < 5:
+        while True:
             n += 1
             newCar = Car(city, city.totalTraffic, start, end)
             if newCar.road.traffic < newCar.road.maxSize:
@@ -198,6 +198,7 @@ def simulation(window, clock):
     stopTime = 0
     simulator.start()
     cityUp.start()
+    startTime = time()
 
     while running:
         drawCity(c, window)
@@ -208,6 +209,7 @@ def simulation(window, clock):
         for event in events:
             if event.type == pg.QUIT:
                 running = False
+                return c
 
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
@@ -222,7 +224,7 @@ def simulation(window, clock):
                         simulationRunning = not simulationRunning
                         for car in c.lstOfCars:
                             car.stopTimeUpdate(time() - stopTime)
-                            car.waitingTimeUpdate(time() - stopTime)
+                            # car.waitingTimeUpdate(time() - stopTime)
                       
                         simulator.start()
                         cityUp.start()
@@ -239,10 +241,11 @@ def simulation(window, clock):
 
                 if event.key == pg.K_BACKSPACE:
                     running = False
-                    activeSpawning = False
-                    carSpawner.stop()
-                    cityUp.stop()
-                    simulator.stop()
+                    return c
+                    # activeSpawning = False
+                    # carSpawner.stop()
+                    # cityUp.stop()
+                    # simulator.stop()
 
                 if event.key == pg.K_t:
                     con.timeMultiplier = float(input("set time multipler: "))
@@ -304,22 +307,15 @@ def simulation(window, clock):
                     else:
                         unHighLight(c)
 
-        drawText(window, f'fps: {clock.get_fps():.1f}', (con.winWidth - 100, 40), (255, 255, 255))
-        drawText(window, f'cars: {len(c.lstOfCars)}', (con.winWidth - 100, 60), (255, 255, 255))
-        drawText(window, f'Sim running: {simulationRunning}', (con.winWidth - 100, 80), (255, 255, 255))
-        drawText(window, f'Car spawning: {activeSpawning}', (con.winWidth - 100, 100), (255, 255, 255))
+        # drawText(window, f'time: {time() - startTime:.2f}', (con.winWidth - 105, 40), (255, 255, 255))
+        drawText(window, f'fps: {clock.get_fps():.1f}', (con.winWidth - 105, 60), (255, 255, 255))
+        drawText(window, f'cars: {len(c.lstOfCars)}', (con.winWidth - 105, 80), (255, 255, 255))
+        drawText(window, f'Sim running: {simulationRunning}', (con.winWidth - 105, 100), (255, 255, 255))
+        drawText(window, f'Car spawning: {activeSpawning}', (con.winWidth - 105, 120), (255, 255, 255))
+        drawText(window, f'Time multiplier: x{con.timeMultiplier}', (con.winWidth - 105, 140), (255, 255, 255))
 
-        if len(c.lstOfCars)  == 0 and c.totalTraffic != 0:
-            lst = []
-            id = []
-            for junction in c.junctions:
-                id.append(str(junction.id))
-                # print(f'id: {junction.id}; avg wait time: {junction.calcAverageStopTime()}; total cars passed: {junction.carsPassed}')
-                lst.append(junction.calcAverageStopTime())
-            print(lst)
-            print(id)
-            
-            running = False
+        # if len(c.lstOfCars)  == 0 and c.totalTraffic != 0:
+        #     running = False
 
         clock.tick(con.fps)
         pg.display.flip()

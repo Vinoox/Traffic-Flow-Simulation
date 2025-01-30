@@ -22,6 +22,15 @@ if __name__ == "__main__":
 
     #simulation
     city = simulation(window, clock)
-    
+
+    lst = []
+    id = []
+    for junction in city.junctions:
+        id.append(str(junction.id))
+        print(f'id: {junction.id}; avg wait time: {junction.calcAverageStopTime()}; total cars passed: {junction.carsPassed}')
+        lst.append(junction.calcAverageStopTime())
+    print(lst)
+    print(id)
+
     
     pg.quit()

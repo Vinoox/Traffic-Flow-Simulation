@@ -37,8 +37,8 @@ class City:
                 if road.id[1] == junction.id:
                     junction.roadsTo.append(road)
 
-        for id, val in self.scaleEdges.items():
-            print(id, val)
+        # for id, val in self.scaleEdges.items():
+        #     print(id, val)
 
     def getRoad(self, id: tuple):
         for road in self.roads:

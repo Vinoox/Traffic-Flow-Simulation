@@ -26,7 +26,8 @@ class Car:
 
         self.currentNode = self.startNode
         self.currentTime = time()
-        self.startTime = time()* con.timeMultiplier
+        # self.startTime = time()* con.timeMultiplier
+        self.startTime = time()
         self.endTime = 0
         self.existTime = 0
         self.path = self.city.find_shortest_path(self.startNode, self.endNode)
@@ -45,18 +46,19 @@ class Car:
 
         self.speed = 0
         self.acceleration = 0.002
-        self.maxSeed = 0.5
+        self.maxSeed = 0.3
 
         self.end = 0
         self.travel_time = 0
 
         self.active = False
         self.passRoute = [self.startNode]
-        self.stopTime=0
-        self.pauseTime = 0
+        # self.stopTime=0
+        # self.pauseTime = 0
         self.updatedPath = False
 
         self.waitTime = 0
+        self.totalWaitTime = 0
 
     def getSize(self):
         if self.active:
@@ -101,19 +103,23 @@ class Car:
 
     def stopTimeUpdate(self, time):
         self.existTime -= time
+        if self.speed == 0:
+            self.waitTime -= time
+            self.totalWaitTime -= time
 
     def timeUpdate(self):
         self.existTime += (time() - self.currentTime) * con.timeMultiplier
         if self.speed == 0: 
             self.waitTime += (time() - self.currentTime) * con.timeMultiplier
+            self.totalWaitTime += (time() - self.currentTime) * con.timeMultiplier
         self.currentTime = time()
 
-    def pausetimeUpdate(self):
-        if self.speed == 0:
-            self.pauseTime += (time() - self.currentstopTime) * con.timeMultiplier
-            # if self.junctionWaiting:
-            #     self.junctionWaiting.carsWaiting.append(self)
-        self.currentstopTime = time()
+    # def pausetimeUpdate(self):
+    #     if self.speed == 0:
+    #         self.pauseTime += (time() - self.currentstopTime) * con.timeMultiplier
+    #         # if self.junctionWaiting:
+    #         #     self.junctionWaiting.carsWaiting.append(self)
+    #     self.currentstopTime = time()
 
     # def waitingTime(self):
     #     if self.speed == 0:
@@ -161,7 +167,7 @@ class Car:
                 if distanceToLight < 7:
                     self.speed = 0
                 elif distanceToLight < 20:
-                    self.speed = max(0.01 * con.timeMultiplier, self.speed - self.acceleration * 4 * con.timeMultiplier)
+                    self.speed = max(0.08 * con.timeMultiplier, self.speed - self.acceleration * 5 * con.timeMultiplier)
                 else:
                     self.speed = min(self.maxSeed * con.timeMultiplier, self.speed + self.acceleration * con.timeMultiplier)
             else:

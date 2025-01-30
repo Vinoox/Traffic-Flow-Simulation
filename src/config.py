@@ -4,7 +4,7 @@ seed = 1234
 winWidth = 1400
 winHeight = 900
 margin = 100
-fps = 1000
+fps = 144
 
 #graph parameter
 netRows = 10
