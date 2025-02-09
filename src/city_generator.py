@@ -25,6 +25,11 @@ class City:
         self.scalePos = self.generate_scale_position()
         self.scaleEdges = self.generate_edges_positions()
 
+        x = [val[0] for val in self.scalePos.values()]
+        y = [val[1] for val in self.scalePos.values()]
+        self.minX, self.maxX = min(x) - 15, max(x) + 15
+        self.minY, self.maxY = min(y) - 15, max(y) + 15
+
         # generowanie skrzyżowań i dróg
         self.junctions = [Junction(id, pos) for id, pos in self.scalePos.items()]
         self.roads = [Road(key, val) for key, val in self.scaleEdges.items()]
@@ -37,8 +42,6 @@ class City:
                 if road.id[1] == junction.id:
                     junction.roadsTo.append(road)
 
-        # for id, val in self.scaleEdges.items():
-        #     print(id, val)
 
     def getRoad(self, id: tuple):
         for road in self.roads:

@@ -26,7 +26,6 @@ class Car:
 
         self.currentNode = self.startNode
         self.currentTime = time()
-        # self.startTime = time()* con.timeMultiplier
         self.startTime = time()
         self.endTime = 0
         self.existTime = 0
@@ -53,8 +52,6 @@ class Car:
 
         self.active = False
         self.passRoute = [self.startNode]
-        # self.stopTime=0
-        # self.pauseTime = 0
         self.updatedPath = False
 
         self.waitTime = 0
@@ -114,26 +111,6 @@ class Car:
             self.totalWaitTime += (time() - self.currentTime) * con.timeMultiplier
         self.currentTime = time()
 
-    # def pausetimeUpdate(self):
-    #     if self.speed == 0:
-    #         self.pauseTime += (time() - self.currentstopTime) * con.timeMultiplier
-    #         # if self.junctionWaiting:
-    #         #     self.junctionWaiting.carsWaiting.append(self)
-    #     self.currentstopTime = time()
-
-    # def waitingTime(self):
-    #     if self.speed == 0:
-    #         self.pauseTime += (time() - self.currentTime) * con.timeMultiplier
-    #     self.currentwaitTime = time()
-
-    # def waitingTimeUpdate(self, time2):
-    #     self.pauseTime -= time2
-
-    # def removeFromJunctionWaitingList(self):
-    #     if self.junctionWaiting:
-    #         self.junctionWaiting.carsWaiting.remove(self)
-    #         self.junctionWaiting = None
-
     def distance(self, pos1: tuple, pos2: tuple):
         return ((pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1])**2) ** 0.5
 
@@ -147,18 +124,6 @@ class Car:
 
     def update(self):
         self.timeUpdate()
-        # self.waitingTime()
-
-        # junction = self.city.getJunction(self.nextNode)
-        # if self.road.traffic_light.state == 'red':
-        #     if self not in junction.waiting_cars:
-        #         junction.addCarWaitTime(self)
-
-        # if self.road.traffic_light.state == 'green':
-        #     if self in junction.waiting_cars:
-        #         junction.removeCarWaitTime(self)
-        #         self.stopTime = self.stopTimeStart
-
 
         distanceToLight = self.distanceToLight()
 

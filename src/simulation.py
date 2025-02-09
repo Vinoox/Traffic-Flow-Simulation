@@ -30,12 +30,7 @@ def drawCity(city: City, window):
             drawText(window, f'Stop time: {car.totalWaitTime:.2f}', (con.winWidth - 100, 180), (255, 255, 255))
 
 def drawFrame(city: City, window):
-    x = [val[0] for val in city.scalePos.values()]
-    y = [val[1] for val in city.scalePos.values()]
-    minX, maxX = min(x) - 15, max(x) + 15
-    minY, maxY = min(y) - 15, max(y) + 15
-
-    pg.draw.rect(window, (255, 255, 255), (minX, minY, maxX - minX, maxY - minY), 3)
+    pg.draw.rect(window, (255, 255, 255), (city.minX, city.minY, city.maxX - city.minX, city.maxY - city.minY), 3)
 
 def createCar(city: City, start=None, end=None, amountOfCars = 1000):
     if city.totalTraffic < amountOfCars:
@@ -131,7 +126,6 @@ def drawText(window, text, position, color=(255, 255, 255), size=30):
     label = font.render(text, True, color)
     window.blit(label, position)
 
-
 def highLightRoute(car: Car):
     car.active = True
     startJunction = car.city.getJunction(car.startNode)
@@ -146,10 +140,8 @@ def highLightRoute(car: Car):
     for x in range(len(car.path) - 1):
         car.city.getRoad((car.path[x], car.path[x + 1])).active = True
 
-
 def unHighLight(city: City):
     for junction in city.junctions:
-        # junction.active = False
         junction.start = False
         junction.end = False
 
@@ -158,7 +150,6 @@ def unHighLight(city: City):
 
     for car in city.lstOfCars:
         car.active = False
-
 
 def carsUpdate(city: City):
     for car in city.lstOfCars:
@@ -172,9 +163,7 @@ def carsUpdate(city: City):
             if car.active: unHighLight(city)
             city.lstOfCars.remove(car)
 
-
 def cityUpdate(city: City):
-    # city update
     for road in city.roads:
         road.setColor()
         city.update(road.id, road.trafficColor)
@@ -183,9 +172,11 @@ def cityUpdate(city: City):
     for junction in city.junctions:
         junction.update_light()
 
-
 def simulation(window, clock):
     c = City(con.netRows, con.netCols, con.seed)
+
+
+
     window = window
     simulator = Task(c, carsUpdate, 0.005)
     cityUp = Task(c, cityUpdate, 0.5 / con.timeMultiplier)
@@ -224,7 +215,6 @@ def simulation(window, clock):
                         simulationRunning = not simulationRunning
                         for car in c.lstOfCars:
                             car.stopTimeUpdate(time() - stopTime)
-                            # car.waitingTimeUpdate(time() - stopTime)
                       
                         simulator.start()
                         cityUp.start()
@@ -242,10 +232,6 @@ def simulation(window, clock):
                 if event.key == pg.K_BACKSPACE:
                     running = False
                     return c
-                    # activeSpawning = False
-                    # carSpawner.stop()
-                    # cityUp.stop()
-                    # simulator.stop()
 
                 if event.key == pg.K_t:
                     con.timeMultiplier = float(input("set time multipler: "))
@@ -313,9 +299,6 @@ def simulation(window, clock):
         drawText(window, f'Sim running: {simulationRunning}', (con.winWidth - 105, 100), (255, 255, 255))
         drawText(window, f'Car spawning: {activeSpawning}', (con.winWidth - 105, 120), (255, 255, 255))
         drawText(window, f'Time multiplier: x{con.timeMultiplier}', (con.winWidth - 105, 140), (255, 255, 255))
-
-        # if len(c.lstOfCars)  == 0 and c.totalTraffic != 0:
-        #     running = False
 
         clock.tick(con.fps)
         pg.display.flip()

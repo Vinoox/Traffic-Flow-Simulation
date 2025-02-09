@@ -22,7 +22,6 @@ class Junction:
         self.totalStopTime = 0
         self.carsPassed = 0
 
-        # self.waiting_cars = []
 
     def getColor(self):
         if self.active:
@@ -49,18 +48,6 @@ class Junction:
             self.counter = 0 if self.counter == len(self.roadsTo) - 1 else self.counter + 1
             self.roadsTo[self.counter].traffic_light.state = 'green'
             self.time = time()
-
-    # def addCarWaitTime(self, car):
-    #     self.waiting_cars.append(car)
-    #     car.stopTimeStart = time() 
-    #     avg_wait_time = self.calcAverageStopTime()
-        
-    # def removeCarWaitTime(self, car):
-    #     if car in self.waiting_cars:
-    #         car.pauseTime = time() - car.stopTimeStart
-    #         self.totalStopTime += car.pauseTime
-    #         self.carsPassed += 1
-    #         self.waiting_cars.remove(car)
 
     def calcAverageStopTime(self):
         if self.carsPassed == 0:
